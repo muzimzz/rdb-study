@@ -1,8 +1,7 @@
 package repository;
 
-import com.zaxxer.hikari.HikariDataSource;
-import domain.Product;
-import org.springframework.jdbc.core.JdbcTemplate;
+import domain.Order;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -11,23 +10,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class ProductRepository {
-
-//    private final JdbcTemplate jdbcTemplate;
-//
-//    public ProductRepository(DataSource dataSource) {
-//        this.jdbcTemplate = new JdbcTemplate(dataSource);
-//    }
+public class OrderRepository {
 
     private final DataSource dataSource;
 
-    public ProductRepository(DataSource dataSource) {
+    public OrderRepository(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    public void save(Product product) {
-        String sql = "insert into products (name, price, stock_quantity, description) values (?, ?, ?, ?)";
-
+    public void save(Order order) {
+        String sql = "insert into orders (customer_id, product_id, quantity, status) values (?, ?, ?, ?)";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -35,27 +27,23 @@ public class ProductRepository {
         try {
             conn = dataSource.getConnection();
             pstmt = conn.prepareStatement(sql);
+            pstmt.setLong(1, order.getCustomerId());
+            pstmt.setLong(2, order.getProductId());
+            pstmt.setInt(3, order.getQuantity());
+            pstmt.setString(4, order.getStatus());
 
-            pstmt.setString(1, product.getName());
-            pstmt.setInt(2, product.getPrice());
-            pstmt.setInt(3, product.getStockQuantity());
-            pstmt.setString(4, product.getDescription());
             pstmt.executeUpdate();
+
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            if (pstmt != null) {
-                try { pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
-            }
-            if (conn != null) {
-                try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
-            }
+            close(conn, pstmt, null);
         }
     }
 
-    public Product findById(Long id) {
-        String sql = "select product_id, name, price, stock_quantity, description from products where product_id = ?";
+    public Order findById(Long id) {
+        String sql = "select order_id, customer_id, product_id, quantity, order_date, status from orders where order_id=?";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -66,14 +54,15 @@ public class ProductRepository {
             pstmt = conn.prepareStatement(sql);
 
             pstmt.setLong(1, id);
+
             rs = pstmt.executeQuery();
             if (rs.next()) {
-                Product product = mapRow(rs);
-                return product;
+                Order order = mapRow(rs);
+                return order;
+
             } else {
                 return null;
             }
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
@@ -81,8 +70,8 @@ public class ProductRepository {
         }
     }
 
-    public List<Product> findAll() {
-        String sql = "select product_id, name, price, stock_quantity, description from products";
+    public List<Order> findAll() {
+        String sql = "select order_id, customer_id, product_id, quantity, order_date, status from orders";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -91,24 +80,22 @@ public class ProductRepository {
         try {
             conn = dataSource.getConnection();
             pstmt = conn.prepareStatement(sql);
-
             rs = pstmt.executeQuery();
-            List<Product> products = new ArrayList<>();
+            List<Order> orders = new ArrayList<>();
             while (rs.next()) {
-                products.add(mapRow(rs));
+                orders.add(mapRow(rs));
             }
-            return products;
+            return orders;
 
-
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
-        } finally {
+        } finally  {
             close(conn, pstmt, rs);
         }
     }
 
-    public void update(Product product) {
-        String sql = "update products set name=?, price=?, stock_quantity=?, description=? where product_id=?";
+    public void update(Order newOrder) {
+        String sql = "update orders set product_id=?, quantity=?, status=? where order_id=?";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -117,14 +104,12 @@ public class ProductRepository {
             conn = dataSource.getConnection();
             pstmt = conn.prepareStatement(sql);
 
-            pstmt.setString(1, product.getName());
-            pstmt.setInt(2, product.getPrice());
-            pstmt.setInt(3, product.getStockQuantity());
-            pstmt.setString(4, product.getDescription());
-            pstmt.setLong(5, product.getProductId());
+            pstmt.setLong(1, newOrder.getProductId());
+            pstmt.setInt(2, newOrder.getQuantity());
+            pstmt.setString(3, newOrder.getStatus());
+            pstmt.setLong(4, newOrder.getOrderId());
 
             pstmt.executeUpdate();
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
@@ -133,7 +118,7 @@ public class ProductRepository {
     }
 
     public void deleteById(Long id) {
-        String sql = "delete from products where product_id=?";
+        String sql = "delete from orders where order_id=?";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -141,11 +126,8 @@ public class ProductRepository {
         try {
             conn = dataSource.getConnection();
             pstmt = conn.prepareStatement(sql);
-
             pstmt.setLong(1, id);
-
             pstmt.executeUpdate();
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
@@ -153,17 +135,18 @@ public class ProductRepository {
         }
     }
 
-    private Product mapRow(ResultSet rs) throws SQLException {
-        Product product = new Product();
-        product.setProductId(rs.getLong("product_id"));
-        product.setName(rs.getString("name"));
-        product.setPrice(rs.getInt("price"));
-        product.setStockQuantity(rs.getInt("stock_quantity"));
-        product.setDescription(rs.getString("description"));
-        return product;
+    private Order mapRow(ResultSet rs) throws SQLException {
+        Order order = new Order();
+        order.setOrderId(rs.getLong("order_id"));
+        order.setCustomerId(rs.getLong("customer_id"));
+        order.setProductId(rs.getLong("product_id"));
+        order.setQuantity(rs.getInt("quantity"));
+        order.setOrderDate(rs.getTimestamp("order_date").toLocalDateTime());
+        order.setStatus(rs.getString("status"));
+        return order;
     }
 
-    private void close(Connection con, Statement stmt, ResultSet rs) {
+    private void close(Connection conn, Statement pstmt, ResultSet rs) {
         if (rs != null) {
             try {
                 rs.close();
@@ -171,16 +154,16 @@ public class ProductRepository {
                 e.printStackTrace();
             }
         }
-        if (stmt != null) {
+        if (pstmt != null) {
             try {
-                stmt.close();
+                pstmt.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
-        if (con != null) {
+        if (conn != null) {
             try {
-                con.close();
+                conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
