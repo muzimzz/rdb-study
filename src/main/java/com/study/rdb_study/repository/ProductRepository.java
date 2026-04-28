@@ -150,13 +150,13 @@ public class ProductRepository {
     }
 
     private Product mapRow(ResultSet rs) throws SQLException {
-        Product product = new Product();
-        product.setProductId(rs.getLong("product_id"));
-        product.setName(rs.getString("name"));
-        product.setPrice(rs.getInt("price"));
-        product.setStockQuantity(rs.getInt("stock_quantity"));
-        product.setDescription(rs.getString("description"));
-        return product;
+        return Product.builder()
+                .productId(rs.getLong("product_id"))
+                .name(rs.getString("name"))
+                .price(rs.getInt("price"))
+                .stockQuantity(rs.getInt("stock_quantity"))
+                .description(rs.getString("description"))
+                .build();
     }
 
     private void close(Connection con, Statement stmt, ResultSet rs) {
