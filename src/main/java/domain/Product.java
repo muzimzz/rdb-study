@@ -8,9 +8,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Product {
-    private Long id;
+    private Long productId;
     private String name;
     private int price;
     private int stockQuantity;
