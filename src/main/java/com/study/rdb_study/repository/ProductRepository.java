@@ -1,9 +1,7 @@
-package repository;
+package com.study.rdb_study.repository;
 
-import domain.Customer;
-import domain.Order;
+import com.study.rdb_study.domain.Product;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -13,12 +11,19 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-public class CustomerRepository {
+public class ProductRepository {
+
+//    private final JdbcTemplate jdbcTemplate;
+//
+//    public ProductRepository(DataSource dataSource) {
+//        this.jdbcTemplate = new JdbcTemplate(dataSource);
+//    }
 
     private final DataSource dataSource;
 
-    public void save(Customer customer) {
-        String sql = "insert into customers (name, email, password, address) values (?, ?, ?, ?)";
+    public void save(Product product) {
+        String sql = "insert into products (name, price, stock_quantity, description) values (?, ?, ?, ?)";
+
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -26,23 +31,27 @@ public class CustomerRepository {
         try {
             conn = dataSource.getConnection();
             pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, customer.getName());
-            pstmt.setString(2, customer.getEmail());
-            pstmt.setString(3, customer.getPassword());
-            pstmt.setString(4, customer.getAddress());
 
+            pstmt.setString(1, product.getName());
+            pstmt.setInt(2, product.getPrice());
+            pstmt.setInt(3, product.getStockQuantity());
+            pstmt.setString(4, product.getDescription());
             pstmt.executeUpdate();
-
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            close(conn, pstmt, null);
+            if (pstmt != null) {
+                try { pstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
+            }
+            if (conn != null) {
+                try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+            }
         }
     }
 
-    public Customer findById(Long id) {
-        String sql = "select customer_id, name, email, address, join_date from customers where customer_id=?";
+    public Product findById(Long id) {
+        String sql = "select product_id, name, price, stock_quantity, description from products where product_id = ?";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -53,15 +62,14 @@ public class CustomerRepository {
             pstmt = conn.prepareStatement(sql);
 
             pstmt.setLong(1, id);
-
             rs = pstmt.executeQuery();
             if (rs.next()) {
-                Customer customer = mapRow(rs);
-                return customer;
-
+                Product product = mapRow(rs);
+                return product;
             } else {
                 return null;
             }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
@@ -69,8 +77,8 @@ public class CustomerRepository {
         }
     }
 
-    public List<Customer> findAll() {
-        String sql = "select customer_id, name, email, address, join_date from customers";
+    public List<Product> findAll() {
+        String sql = "select product_id, name, price, stock_quantity, description from products";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -79,22 +87,24 @@ public class CustomerRepository {
         try {
             conn = dataSource.getConnection();
             pstmt = conn.prepareStatement(sql);
-            rs = pstmt.executeQuery();
-            List<Customer> customers = new ArrayList<>();
-            while (rs.next()) {
-                customers.add(mapRow(rs));
-            }
-            return customers;
 
-        } catch (SQLException e) {
+            rs = pstmt.executeQuery();
+            List<Product> products = new ArrayList<>();
+            while (rs.next()) {
+                products.add(mapRow(rs));
+            }
+            return products;
+
+
+        } catch (Exception e) {
             throw new RuntimeException(e);
-        } finally  {
+        } finally {
             close(conn, pstmt, rs);
         }
     }
 
-    public void update(Customer customer) {
-        String sql = "update customers set email=?, address=? where customer_id=?";
+    public void update(Product product) {
+        String sql = "update products set name=?, price=?, stock_quantity=?, description=? where product_id=?";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -103,32 +113,14 @@ public class CustomerRepository {
             conn = dataSource.getConnection();
             pstmt = conn.prepareStatement(sql);
 
-            pstmt.setString(1, customer.getEmail());
-            pstmt.setString(2, customer.getAddress());
-            pstmt.setLong(3, customer.getCustomerId());
+            pstmt.setString(1, product.getName());
+            pstmt.setInt(2, product.getPrice());
+            pstmt.setInt(3, product.getStockQuantity());
+            pstmt.setString(4, product.getDescription());
+            pstmt.setLong(5, product.getProductId());
 
             pstmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            close(conn, pstmt, null);
-        }
-    }
 
-    public void updatePassword(Long id, String newPassword) {
-        String sql = "update customers set password=? where customer_id=?";
-
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-
-        try {
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
-
-            pstmt.setString(1, newPassword);
-            pstmt.setLong(2, id);
-
-            pstmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
@@ -137,7 +129,7 @@ public class CustomerRepository {
     }
 
     public void deleteById(Long id) {
-        String sql = "delete from customers where customer_id=?";
+        String sql = "delete from products where product_id=?";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -145,8 +137,11 @@ public class CustomerRepository {
         try {
             conn = dataSource.getConnection();
             pstmt = conn.prepareStatement(sql);
+
             pstmt.setLong(1, id);
+
             pstmt.executeUpdate();
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
@@ -154,18 +149,17 @@ public class CustomerRepository {
         }
     }
 
-    private Customer mapRow(ResultSet rs) throws SQLException {
-        Customer customer = new Customer();
-        customer.setCustomerId(rs.getLong("customer_id"));
-        customer.setName(rs.getString("name"));
-        customer.setEmail(rs.getString("email"));
-        customer.setAddress(rs.getString("address"));
-        customer.setJoinDate(rs.getTimestamp("join_date").toLocalDateTime());
-
-        return customer;
+    private Product mapRow(ResultSet rs) throws SQLException {
+        Product product = new Product();
+        product.setProductId(rs.getLong("product_id"));
+        product.setName(rs.getString("name"));
+        product.setPrice(rs.getInt("price"));
+        product.setStockQuantity(rs.getInt("stock_quantity"));
+        product.setDescription(rs.getString("description"));
+        return product;
     }
 
-    private void close(Connection conn, Statement pstmt, ResultSet rs) {
+    private void close(Connection con, Statement stmt, ResultSet rs) {
         if (rs != null) {
             try {
                 rs.close();
@@ -173,16 +167,16 @@ public class CustomerRepository {
                 e.printStackTrace();
             }
         }
-        if (pstmt != null) {
+        if (stmt != null) {
             try {
-                pstmt.close();
+                stmt.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
-        if (conn != null) {
+        if (con != null) {
             try {
-                conn.close();
+                con.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }

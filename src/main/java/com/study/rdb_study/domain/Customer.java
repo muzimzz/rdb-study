@@ -1,4 +1,4 @@
-package domain;
+package com.study.rdb_study.domain;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

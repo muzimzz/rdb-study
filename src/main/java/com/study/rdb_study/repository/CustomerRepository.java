@@ -1,8 +1,7 @@
-package repository;
+package com.study.rdb_study.repository;
 
-import domain.Order;
+import com.study.rdb_study.domain.Customer;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -12,12 +11,12 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-public class OrderRepository {
+public class CustomerRepository {
 
     private final DataSource dataSource;
 
-    public void save(Order order) {
-        String sql = "insert into orders (customer_id, product_id, quantity, status) values (?, ?, ?, ?)";
+    public void save(Customer customer) {
+        String sql = "insert into customers (name, email, password, address) values (?, ?, ?, ?)";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -25,10 +24,10 @@ public class OrderRepository {
         try {
             conn = dataSource.getConnection();
             pstmt = conn.prepareStatement(sql);
-            pstmt.setLong(1, order.getCustomerId());
-            pstmt.setLong(2, order.getProductId());
-            pstmt.setInt(3, order.getQuantity());
-            pstmt.setString(4, order.getStatus());
+            pstmt.setString(1, customer.getName());
+            pstmt.setString(2, customer.getEmail());
+            pstmt.setString(3, customer.getPassword());
+            pstmt.setString(4, customer.getAddress());
 
             pstmt.executeUpdate();
 
@@ -40,8 +39,8 @@ public class OrderRepository {
         }
     }
 
-    public Order findById(Long id) {
-        String sql = "select order_id, customer_id, product_id, quantity, order_date, status from orders where order_id=?";
+    public Customer findById(Long id) {
+        String sql = "select customer_id, name, email, address, join_date from customers where customer_id=?";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -55,8 +54,8 @@ public class OrderRepository {
 
             rs = pstmt.executeQuery();
             if (rs.next()) {
-                Order order = mapRow(rs);
-                return order;
+                Customer customer = mapRow(rs);
+                return customer;
 
             } else {
                 return null;
@@ -68,8 +67,8 @@ public class OrderRepository {
         }
     }
 
-    public List<Order> findAll() {
-        String sql = "select order_id, customer_id, product_id, quantity, order_date, status from orders";
+    public List<Customer> findAll() {
+        String sql = "select customer_id, name, email, address, join_date from customers";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -79,11 +78,11 @@ public class OrderRepository {
             conn = dataSource.getConnection();
             pstmt = conn.prepareStatement(sql);
             rs = pstmt.executeQuery();
-            List<Order> orders = new ArrayList<>();
+            List<Customer> customers = new ArrayList<>();
             while (rs.next()) {
-                orders.add(mapRow(rs));
+                customers.add(mapRow(rs));
             }
-            return orders;
+            return customers;
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -92,8 +91,8 @@ public class OrderRepository {
         }
     }
 
-    public void update(Order newOrder) {
-        String sql = "update orders set product_id=?, quantity=?, status=? where order_id=?";
+    public void update(Customer customer) {
+        String sql = "update customers set email=?, address=? where customer_id=?";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -102,10 +101,30 @@ public class OrderRepository {
             conn = dataSource.getConnection();
             pstmt = conn.prepareStatement(sql);
 
-            pstmt.setLong(1, newOrder.getProductId());
-            pstmt.setInt(2, newOrder.getQuantity());
-            pstmt.setString(3, newOrder.getStatus());
-            pstmt.setLong(4, newOrder.getOrderId());
+            pstmt.setString(1, customer.getEmail());
+            pstmt.setString(2, customer.getAddress());
+            pstmt.setLong(3, customer.getCustomerId());
+
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            close(conn, pstmt, null);
+        }
+    }
+
+    public void updatePassword(Long id, String newPassword) {
+        String sql = "update customers set password=? where customer_id=?";
+
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement(sql);
+
+            pstmt.setString(1, newPassword);
+            pstmt.setLong(2, id);
 
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -116,7 +135,7 @@ public class OrderRepository {
     }
 
     public void deleteById(Long id) {
-        String sql = "delete from orders where order_id=?";
+        String sql = "delete from customers where customer_id=?";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -133,15 +152,15 @@ public class OrderRepository {
         }
     }
 
-    private Order mapRow(ResultSet rs) throws SQLException {
-        Order order = new Order();
-        order.setOrderId(rs.getLong("order_id"));
-        order.setCustomerId(rs.getLong("customer_id"));
-        order.setProductId(rs.getLong("product_id"));
-        order.setQuantity(rs.getInt("quantity"));
-        order.setOrderDate(rs.getTimestamp("order_date").toLocalDateTime());
-        order.setStatus(rs.getString("status"));
-        return order;
+    private Customer mapRow(ResultSet rs) throws SQLException {
+        Customer customer = new Customer();
+        customer.setCustomerId(rs.getLong("customer_id"));
+        customer.setName(rs.getString("name"));
+        customer.setEmail(rs.getString("email"));
+        customer.setAddress(rs.getString("address"));
+        customer.setJoinDate(rs.getTimestamp("join_date").toLocalDateTime());
+
+        return customer;
     }
 
     private void close(Connection conn, Statement pstmt, ResultSet rs) {
