@@ -1,9 +1,9 @@
-package service;
+package com.study.rdb_study.service;
 
-import domain.Customer;
+import com.study.rdb_study.domain.Customer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import repository.CustomerRepository;
+import com.study.rdb_study.repository.CustomerRepository;
 
 import java.util.List;
 
