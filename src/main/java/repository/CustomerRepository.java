@@ -2,6 +2,7 @@ package repository;
 
 import domain.Customer;
 import domain.Order;
+import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
@@ -11,13 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
+@RequiredArgsConstructor
 public class CustomerRepository {
 
     private final DataSource dataSource;
-
-    public CustomerRepository(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
 
     public void save(Customer customer) {
         String sql = "insert into customers (name, email, password, address) values (?, ?, ?, ?)";
