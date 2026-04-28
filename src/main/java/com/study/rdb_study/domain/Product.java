@@ -1,12 +1,8 @@
 package com.study.rdb_study.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
-@Setter
 @NoArgsConstructor
 public class Product {
     private Long productId;
@@ -14,4 +10,13 @@ public class Product {
     private int price;
     private int stockQuantity;
     private String description;
+
+    @Builder
+    public Product(Long productId, String name, int price, int stockQuantity, String description) {
+        this.productId = productId;
+        this.name = name;
+        this.price = price;
+        this.stockQuantity = stockQuantity;
+        this.description = description;
+    }
 }
