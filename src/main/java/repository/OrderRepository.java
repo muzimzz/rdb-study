@@ -1,6 +1,7 @@
 package repository;
 
 import domain.Order;
+import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 
@@ -10,13 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
+@RequiredArgsConstructor
 public class OrderRepository {
 
     private final DataSource dataSource;
-
-    public OrderRepository(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
 
     public void save(Order order) {
         String sql = "insert into orders (customer_id, product_id, quantity, status) values (?, ?, ?, ?)";

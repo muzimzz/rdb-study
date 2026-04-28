@@ -2,6 +2,7 @@ package repository;
 
 import com.zaxxer.hikari.HikariDataSource;
 import domain.Product;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
+@RequiredArgsConstructor
 public class ProductRepository {
 
 //    private final JdbcTemplate jdbcTemplate;
@@ -20,10 +22,6 @@ public class ProductRepository {
 //    }
 
     private final DataSource dataSource;
-
-    public ProductRepository(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
 
     public void save(Product product) {
         String sql = "insert into products (name, price, stock_quantity, description) values (?, ?, ?, ?)";
