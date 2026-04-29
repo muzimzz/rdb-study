@@ -21,4 +21,15 @@ public class ProductRequest {
                 .build();
     }
 
+    // JPA에서는 Entity안에 update메서드 작성 (Dirty Checking)
+    public Product toEntityWithId(Long id) {
+        return Product.builder()
+                .productId(id)
+                .name(this.name)
+                .price(this.price)
+                .stockQuantity(this.stockQuantity)
+                .description(this.description)
+                .build();
+    }
+
 }

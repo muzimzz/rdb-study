@@ -17,7 +17,7 @@ public class ProductResponse {
     private int stockQuantity;
     private String description;
 
-    public static ProductResponse fromEntity(Product product) {
+    public static ProductResponse toDto(Product product) {
         return ProductResponse.builder()
                 .productId(product.getProductId())
                 .name(product.getName())
