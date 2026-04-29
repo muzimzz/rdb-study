@@ -67,6 +67,33 @@ public class CustomerRepository {
         }
     }
 
+    public String findPasswordById(Long id) {
+        String sql = "select password from customers where customer_id=?";
+
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement(sql);
+
+            pstmt.setLong(1, id);
+
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString(1);
+
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            close(conn, pstmt, rs);
+        }
+    }
+
     public List<Customer> findAll() {
         String sql = "select customer_id, name, email, address, join_date from customers";
 
@@ -178,14 +205,13 @@ public class CustomerRepository {
     }
 
     private Customer mapRow(ResultSet rs) throws SQLException {
-        Customer customer = new Customer();
-        customer.setCustomerId(rs.getLong("customer_id"));
-        customer.setName(rs.getString("name"));
-        customer.setEmail(rs.getString("email"));
-        customer.setAddress(rs.getString("address"));
-        customer.setJoinDate(rs.getTimestamp("join_date").toLocalDateTime());
-
-        return customer;
+        return Customer.builder()
+                .customerId(rs.getLong("customer_id"))
+                .name(rs.getString("name"))
+                .email(rs.getString("email"))
+                .address(rs.getString("address"))
+                .joinDate(rs.getTimestamp("join_date").toLocalDateTime())
+                .build();
     }
 
     private void close(Connection conn, Statement pstmt, ResultSet rs) {
