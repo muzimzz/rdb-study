@@ -24,7 +24,6 @@ public class ProductRepository {
     public void save(Product product) {
         String sql = "insert into products (name, price, stock_quantity, description) values (?, ?, ?, ?)";
 
-
         Connection conn = null;
         PreparedStatement pstmt = null;
 
@@ -149,6 +148,30 @@ public class ProductRepository {
         }
     }
 
+    public boolean existsById(Long id) {
+        String sql = "select count(*) from products where product_id=?";
+
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setLong(1, id);
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            close(conn, pstmt, rs);
+        }
+
+        return false;
+    }
+
     private Product mapRow(ResultSet rs) throws SQLException {
         return Product.builder()
                 .productId(rs.getLong("product_id"))
@@ -182,4 +205,6 @@ public class ProductRepository {
             }
         }
     }
+
+
 }

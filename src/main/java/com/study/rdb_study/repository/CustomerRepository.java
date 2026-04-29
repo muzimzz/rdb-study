@@ -152,6 +152,31 @@ public class CustomerRepository {
         }
     }
 
+    public boolean existsById(Long id) {
+        String sql = "select count(*) from customers where customer_id=?";
+
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setLong(1, id);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getLong(1) > 0;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            close(conn, pstmt, null);
+        }
+
+        return false;
+    }
+
     private Customer mapRow(ResultSet rs) throws SQLException {
         Customer customer = new Customer();
         customer.setCustomerId(rs.getLong("customer_id"));
@@ -186,4 +211,6 @@ public class CustomerRepository {
             }
         }
     }
+
+
 }
