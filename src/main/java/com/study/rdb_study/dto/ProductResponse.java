@@ -4,10 +4,8 @@ import com.study.rdb_study.domain.Product;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
 @AllArgsConstructor
 @Builder // https://developer-anxi.tistory.com/30
 public class ProductResponse {
