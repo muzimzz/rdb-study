@@ -158,14 +158,14 @@ public class OrderRepository {
     }
 
     private Order mapRow(ResultSet rs) throws SQLException {
-        Order order = new Order();
-        order.setOrderId(rs.getLong("order_id"));
-        order.setCustomerId(rs.getLong("customer_id"));
-        order.setProductId(rs.getLong("product_id"));
-        order.setQuantity(rs.getInt("quantity"));
-        order.setOrderDate(rs.getTimestamp("order_date").toLocalDateTime());
-        order.setStatus(rs.getString("status"));
-        return order;
+        return Order.builder()
+                .orderId(rs.getLong("order_id"))
+                .customerId(rs.getLong("customer_id"))
+                .productId(rs.getLong("product_id"))
+                .quantity(rs.getInt("quantity"))
+                .orderDate(rs.getTimestamp("order_date").toLocalDateTime())
+                .status(rs.getString("status"))
+                .build();
     }
 
     private void close(Connection conn, Statement pstmt, ResultSet rs) {

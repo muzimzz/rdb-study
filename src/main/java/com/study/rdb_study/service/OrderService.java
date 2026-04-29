@@ -1,11 +1,13 @@
 package com.study.rdb_study.service;
 
-import com.study.rdb_study.domain.Order;
+import com.study.rdb_study.dto.OrderRequest;
+import com.study.rdb_study.dto.OrderResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.study.rdb_study.repository.OrderRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -13,20 +15,22 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
 
-    public void save(Order order) {
-        orderRepository.save(order);
+    public void save(OrderRequest orderRequest) {
+        orderRepository.save(orderRequest.toEntity());
     }
 
-    public Order findById(Long id) {
-        return orderRepository.findById(id);
+    public OrderResponse findById(Long id) {
+        return OrderResponse.toDto(orderRepository.findById(id));
     }
 
-    public List<Order> findAll() {
-        return orderRepository.findAll();
+    public List<OrderResponse> findAll() {
+        return orderRepository.findAll().stream()
+                .map(OrderResponse::toDto)
+                .collect(Collectors.toList());
     }
 
-    public void update(Order order) {
-        orderRepository.update(order);
+    public void update(Long id, OrderRequest orderRequest) {
+        orderRepository.update(orderRequest.toEntityWithId(id));
     }
 
     public void deleteById(Long id) {
