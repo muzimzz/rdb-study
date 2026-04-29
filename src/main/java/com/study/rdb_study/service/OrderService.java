@@ -30,7 +30,7 @@ public class OrderService {
     }
 
     public void deleteById(Long id) {
-        if (findById(id) == null)
+        if (!orderRepository.existsById(id))
             throw new IllegalArgumentException("존재하지 않는 주문");
         orderRepository.deleteById(id);
     }

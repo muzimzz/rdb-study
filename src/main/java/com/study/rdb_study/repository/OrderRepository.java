@@ -132,6 +132,31 @@ public class OrderRepository {
         }
     }
 
+    public boolean existsById(Long id) {
+
+        String sql = "select count(*) from orders where order_id=?";
+
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setLong(1, id);
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            close(conn, pstmt, null);
+        }
+
+        return false;
+    }
+
     private Order mapRow(ResultSet rs) throws SQLException {
         Order order = new Order();
         order.setOrderId(rs.getLong("order_id"));
@@ -166,4 +191,6 @@ public class OrderRepository {
             }
         }
     }
+
+
 }
