@@ -16,7 +16,7 @@ public class OrderRepository {
     private final DataSource dataSource;
 
     public void save(Order order) {
-        String sql = "insert into orders (customer_id, product_id, quantity, status) values (?, ?, ?, ?)";
+        String sql = "insert into orders (customer_id, status) values (?, ?)";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -25,9 +25,7 @@ public class OrderRepository {
             conn = dataSource.getConnection();
             pstmt = conn.prepareStatement(sql);
             pstmt.setLong(1, order.getCustomerId());
-            pstmt.setLong(2, order.getProductId());
-            pstmt.setInt(3, order.getQuantity());
-            pstmt.setString(4, order.getStatus());
+            pstmt.setString(2, order.getStatus());
 
             pstmt.executeUpdate();
 
@@ -40,7 +38,7 @@ public class OrderRepository {
     }
 
     public Order findById(Long id) {
-        String sql = "select order_id, customer_id, product_id, quantity, order_date, status from orders where order_id=?";
+        String sql = "select order_id, customer_id, order_date, status from orders where order_id=?";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -68,7 +66,7 @@ public class OrderRepository {
     }
 
     public List<Order> findAll() {
-        String sql = "select order_id, customer_id, product_id, quantity, order_date, status from orders";
+        String sql = "select order_id, customer_id, order_date, status from orders";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -92,7 +90,7 @@ public class OrderRepository {
     }
 
     public void update(Order newOrder) {
-        String sql = "update orders set product_id=?, quantity=?, status=? where order_id=?";
+        String sql = "update orders set status=? where order_id=?";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -101,10 +99,8 @@ public class OrderRepository {
             conn = dataSource.getConnection();
             pstmt = conn.prepareStatement(sql);
 
-            pstmt.setLong(1, newOrder.getProductId());
-            pstmt.setInt(2, newOrder.getQuantity());
-            pstmt.setString(3, newOrder.getStatus());
-            pstmt.setLong(4, newOrder.getOrderId());
+            pstmt.setString(1, newOrder.getStatus());
+            pstmt.setLong(2, newOrder.getOrderId());
 
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -151,7 +147,7 @@ public class OrderRepository {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            close(conn, pstmt, null);
+            close(conn, pstmt, rs);
         }
 
         return false;
@@ -161,8 +157,6 @@ public class OrderRepository {
         return Order.builder()
                 .orderId(rs.getLong("order_id"))
                 .customerId(rs.getLong("customer_id"))
-                .productId(rs.getLong("product_id"))
-                .quantity(rs.getInt("quantity"))
                 .orderDate(rs.getTimestamp("order_date").toLocalDateTime())
                 .status(rs.getString("status"))
                 .build();

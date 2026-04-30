@@ -10,15 +10,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class OrderRequest {
     private Long customerId;
-    private Long productId;
-    private int quantity;
     private String status;
 
     public Order toEntity() {
         return Order.builder()
                 .customerId(this.customerId)
-                .productId(this.productId)
-                .quantity(this.quantity)
                 .status(this.status)
                 .build();
     }
@@ -27,8 +23,6 @@ public class OrderRequest {
         return Order.builder()
                 .orderId(id)
                 .customerId(this.customerId)
-                .productId(this.productId)
-                .quantity(this.quantity)
                 .status(this.status)
                 .build();
     }

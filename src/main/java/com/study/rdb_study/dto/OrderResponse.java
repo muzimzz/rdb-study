@@ -13,8 +13,6 @@ import java.time.LocalDateTime;
 public class OrderResponse {
     private Long orderId;
     private Long customerId;
-    private Long productId;
-    private int quantity;
     private LocalDateTime orderDate;
     private String status;
 
@@ -22,8 +20,6 @@ public class OrderResponse {
         return OrderResponse.builder()
                 .orderId(order.getOrderId())
                 .customerId(order.getCustomerId())
-                .productId(order.getProductId())
-                .quantity(order.getQuantity())
                 .orderDate(order.getOrderDate())
                 .status(order.getStatus())
                 .build();
