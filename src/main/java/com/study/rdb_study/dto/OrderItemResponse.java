@@ -13,7 +13,7 @@ public class OrderItemResponse {
     private Long productId;
     private int quantity;
 
-    static OrderItemResponse fromEntity(OrderItem orderitem) {
+    public static OrderItemResponse fromEntity(OrderItem orderitem) {
         return OrderItemResponse.builder()
                 .orderId(orderitem.getOrderId())
                 .productId(orderitem.getProductId())
