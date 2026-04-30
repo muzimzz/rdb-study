@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+// 제1정규화 (Order: Product를 OrderItem으로 분리)
 @Getter
 @NoArgsConstructor
 public class OrderItem {
