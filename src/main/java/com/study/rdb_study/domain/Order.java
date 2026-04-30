@@ -3,24 +3,23 @@ package com.study.rdb_study.domain;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
 public class Order {
     private Long orderId;
     private Long customerId;
-    private Long productId;
-    private int quantity;
     private LocalDateTime orderDate;
     private String status;
+    private List<OrderItem> orderItems;
 
     @Builder
-    public Order(Long orderId, Long customerId, Long productId, int quantity, LocalDateTime orderDate, String status) {
+    public Order(Long orderId, Long customerId, LocalDateTime orderDate, String status, List<OrderItem> orderItems) {
         this.orderId = orderId;
         this.customerId = customerId;
-        this.productId = productId;
-        this.quantity = quantity;
         this.orderDate = orderDate;
         this.status = status;
+        this.orderItems = orderItems;
     }
 }
