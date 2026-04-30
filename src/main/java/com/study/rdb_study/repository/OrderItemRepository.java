@@ -12,7 +12,7 @@ import java.util.List;
 public class OrderItemRepository {
 
     private final JdbcTemplate jdbcTemplate;
-    
+
     public void save(OrderItem orderItem) {
         // duplicate key 문법을 이용해 save+increase 합치기 가능
 //      String sql = "INSERT INTO order_items (order_id, product_id, quantity)"
