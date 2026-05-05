@@ -40,3 +40,6 @@ Content-Type: application/json
     }
   ]
 }
+
+### 주문 응답 테스트
+GET http://localhost:8080/orders/1
