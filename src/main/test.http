@@ -1,0 +1,42 @@
+### 고객(Customer) 생성 테스트
+POST http://localhost:8080/customers
+Content-Type: application/json
+
+{
+  "name": "서현",
+  "email": "seohyun@study.com",
+  "password": "password123!",
+  "address": "서울특별시 강남구",
+  "joinDate": "2026-05-06T00:10"
+}
+
+### 상품(Product) 생성 테스트
+POST http://localhost:8080/products
+Content-Type: application/json
+
+{
+  "name": "아이스 아메리카노",
+  "price": 4500,
+  "stockQuantity": 100,
+  "description": "산미가 적고 고소한 원두의 아메리카노"
+}
+
+### 주문(Order) 생성 테스트
+POST http://localhost:8080/orders
+Content-Type: application/json
+
+{
+  "customerId": 55,
+  "orderDate": "2026-05-06T15:00",
+  "status": "PENDING",
+  "orderItems": [
+    {
+      "productId": 1,
+      "quantity": 2
+    },
+    {
+      "productId": 2,
+      "quantity": 1
+    }
+  ]
+}
