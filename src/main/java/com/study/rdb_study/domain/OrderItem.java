@@ -18,4 +18,12 @@ public class OrderItem {
         this.productId = productId;
         this.quantity = quantity;
     }
+
+    public OrderItem withOrderId(Long orderId) {
+        return OrderItem.builder()
+                .orderId(orderId)
+                .productId(this.productId)
+                .quantity(this.quantity)
+                .build();
+    }
 }
