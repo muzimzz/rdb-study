@@ -13,8 +13,8 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    public void save(@RequestBody ProductRequest request) {
-        productService.save(request);
+    public ProductResponse save(@RequestBody ProductRequest request) {
+        return productService.save(request);
     }
 
     @GetMapping("/{id}")
