@@ -1,8 +1,8 @@
 package com.study.rdb_study.orderItem;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,6 +13,11 @@ import java.util.Optional;
 public class OrderItemRepository {
 
     private final JdbcTemplate jdbcTemplate;
+    private final RowMapper<OrderItem> orderItemRowMapper = (rs, rowNum) -> OrderItem.builder()
+            .orderId(rs.getLong("order_id"))
+            .productId(rs.getLong("product_id"))
+            .quantity(rs.getInt("quantity"))
+            .build();
 
     public OrderItem save(OrderItem orderItem) {
         // duplicate key 문법을 이용해 save+increase 합치기 가능
@@ -47,11 +52,7 @@ public class OrderItemRepository {
         // QueryForObject(): 단건 조회 -> try-catch로 감싸줘야 함
         // Query(): 리스트로 반환 -> 데이터가 들어가지 않아도 예외 던질 필요x
         // findById는 Optional<Data>, findAll은 List<Data> return하는 것과 같은 맥락
-        List<OrderItem> result = jdbcTemplate.query(sql, (rs, rowNum) -> OrderItem.builder()
-                .orderId(rs.getLong("order_id"))
-                .productId(rs.getLong("product_id"))
-                .quantity(rs.getInt("quantity"))
-                .build(), orderId, productId);
+        List<OrderItem> result = jdbcTemplate.query(sql, orderItemRowMapper, orderId, productId);
 
         return result.stream().findFirst();
 
@@ -60,11 +61,7 @@ public class OrderItemRepository {
     // findAll()은 모든 주문을 조회하기 때문에 서비스 상 필요x
     public List<OrderItem> findByOrderId(Long orderId) {
         String sql = "select order_id, product_id, quantity from order_items where order_id=?";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> OrderItem.builder()
-                .orderId(rs.getLong("order_id"))
-                .productId(rs.getLong("product_id"))
-                .quantity(rs.getInt("quantity"))
-                .build(), orderId);
+        return jdbcTemplate.query(sql, orderItemRowMapper, orderId);
     }
 
     // 전체 취소
