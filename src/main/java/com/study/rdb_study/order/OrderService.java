@@ -1,10 +1,7 @@
-package com.study.rdb_study.service;
+package com.study.rdb_study.order;
 
-import com.study.rdb_study.dto.OrderRequest;
-import com.study.rdb_study.dto.OrderResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import com.study.rdb_study.repository.OrderRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
