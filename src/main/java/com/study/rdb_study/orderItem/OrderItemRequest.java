@@ -17,4 +17,12 @@ public class OrderItemRequest {
                 .quantity(this.quantity)
                 .build();
     }
+
+    public OrderItem toEntity(Long orderId) {
+        return OrderItem.builder()
+                .orderId(orderId)
+                .productId(this.productId)
+                .quantity(this.quantity)
+                .build();
+    }
 }

@@ -12,11 +12,11 @@ public class OrderItemResponse {
     private Long productId;
     private int quantity;
 
-    public static OrderItemResponse fromEntity(OrderItem orderitem) {
+    public static OrderItemResponse toDto(OrderItem orderItem) {
         return OrderItemResponse.builder()
-                .orderId(orderitem.getOrderId())
-                .productId(orderitem.getProductId())
-                .quantity(orderitem.getQuantity())
+                .orderId(orderItem.getOrderId())
+                .productId(orderItem.getProductId())
+                .quantity(orderItem.getQuantity())
                 .build();
     }
 }

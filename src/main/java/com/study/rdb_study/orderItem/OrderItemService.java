@@ -15,23 +15,24 @@ public class OrderItemService {
     private final OrderItemRepository orderItemRepository;
 
     public OrderItemResponse save(OrderItemRequest request) {
-        orderItemRepository.save(request.toEntity());
-        OrderItem orderItem = orderItemRepository.findByOrderIdAndProductId(request.getOrderId(), request.getProductId())
-                .orElseThrow(() -> new IllegalArgumentException("상품 추가 실패"));
-        return OrderItemResponse.fromEntity(orderItem);
+        OrderItem orderItem = orderItemRepository.save(request.toEntity());
+//        orderItemRepository.save(request.toEntity());
+//        OrderItem orderItem = orderItemRepository.findByOrderIdAndProductId(request.getOrderId(), request.getProductId())
+//                .orElseThrow(() -> new IllegalArgumentException("상품 조회 실패"));
+        return OrderItemResponse.toDto(orderItem);
     }
 
     public OrderItemResponse increaseQuantity(Long orderId, Long productId, int addQuantity) {
         orderItemRepository.increaseQuantity(orderId, productId, addQuantity);
         OrderItem orderItem = orderItemRepository.findByOrderIdAndProductId(orderId, productId)
-                .orElseThrow(() -> new IllegalArgumentException("수량 추가 실패"));
-        return OrderItemResponse.fromEntity(orderItem);
+                .orElseThrow(() -> new IllegalArgumentException("상품 조회 실패"));
+        return OrderItemResponse.toDto(orderItem);
     }
 
     @Transactional(readOnly = true)
     public List<OrderItemResponse> findByOrderId(Long orderId) {
         return orderItemRepository.findByOrderId(orderId).stream()
-                .map(OrderItemResponse::fromEntity)
+                .map(OrderItemResponse::toDto)
                 .collect(Collectors.toList());
     }
 

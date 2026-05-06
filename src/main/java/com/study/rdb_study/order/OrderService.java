@@ -1,25 +1,40 @@
 package com.study.rdb_study.order;
 
+import com.study.rdb_study.orderItem.OrderItemRepository;
+import com.study.rdb_study.orderItem.OrderItemRequest;
+import com.study.rdb_study.orderItem.OrderItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
 
-    public void save(OrderRequest orderRequest) {
-        orderRepository.save(orderRequest.toEntity());
+    public OrderResponse save(OrderRequest orderRequest) {
+        Order order = orderRepository.save(orderRequest.toEntity());
+        for (OrderItemRequest itemRequest : orderRequest.getItems()) {
+            orderItemRepository.save(itemRequest.toEntity(order.getOrderId()));
+        }
+
+        return OrderResponse.toDto(order);
     }
 
+    @Transactional(readOnly = true)
     public OrderResponse findById(Long id) {
-        return OrderResponse.toDto(orderRepository.findById(id));
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("주문 조회 실패"));
+        return OrderResponse.toDto(order);
     }
 
+    @Transactional(readOnly = true)
     public List<OrderResponse> findAll() {
         return orderRepository.findAll().stream()
                 .map(OrderResponse::toDto)
