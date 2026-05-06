@@ -14,12 +14,15 @@ public class OrderItemRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public void save(OrderItem orderItem) {
+    public OrderItem save(OrderItem orderItem) {
         // duplicate key 문법을 이용해 save+increase 합치기 가능
 //      String sql = "INSERT INTO order_items (order_id, product_id, quantity)"
 //      + " VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)";
         String sql = "insert into order_items (order_id, product_id, quantity) values (?, ?, ?)";
         jdbcTemplate.update(sql, orderItem.getOrderId(), orderItem.getProductId(), orderItem.getQuantity());
+
+        return findByOrderIdAndProductId(orderItem.getOrderId(), orderItem.getProductId())
+                .orElseThrow(() -> new IllegalArgumentException("저장된 데이터 조회 실패"));
     }
 
     public void increaseQuantity (Long orderId, Long productId, int addQuantity) {
@@ -75,6 +78,4 @@ public class OrderItemRepository {
         String sql = "delete from order_items where order_id=? and product_id=?";
         jdbcTemplate.update(sql, orderId, productId);
     }
-
-
 }
