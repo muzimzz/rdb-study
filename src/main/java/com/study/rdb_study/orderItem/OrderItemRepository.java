@@ -1,6 +1,5 @@
-package com.study.rdb_study.repository;
+package com.study.rdb_study.orderItem;
 
-import com.study.rdb_study.domain.OrderItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;

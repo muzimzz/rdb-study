@@ -1,6 +1,5 @@
-package com.study.rdb_study.dto;
+package com.study.rdb_study.orderItem;
 
-import com.study.rdb_study.domain.OrderItem;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

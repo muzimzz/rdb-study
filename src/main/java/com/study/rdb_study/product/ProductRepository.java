@@ -1,6 +1,5 @@
-package com.study.rdb_study.repository;
+package com.study.rdb_study.product;
 
-import com.study.rdb_study.domain.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

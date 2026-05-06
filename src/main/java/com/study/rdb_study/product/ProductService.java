@@ -1,10 +1,7 @@
-package com.study.rdb_study.service;
+package com.study.rdb_study.product;
 
-import com.study.rdb_study.dto.ProductRequest;
-import com.study.rdb_study.dto.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import com.study.rdb_study.repository.ProductRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;

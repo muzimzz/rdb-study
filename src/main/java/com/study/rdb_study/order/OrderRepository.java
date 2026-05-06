@@ -1,7 +1,6 @@
 package com.study.rdb_study.repository;
 
 import com.study.rdb_study.domain.Order;
-import com.study.rdb_study.domain.OrderItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -15,34 +14,20 @@ import java.util.List;
 public class OrderRepository {
 
     private final DataSource dataSource;
-    private final OrderItemRepository orderItemRepository;
 
     public void save(Order order) {
-        String sql = "insert into orders (customer_id, status, order_date) values (?, ?, ?)";
+        String sql = "insert into orders (customer_id, status) values (?, ?)";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
 
         try {
             conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            pstmt = conn.prepareStatement(sql);
             pstmt.setLong(1, order.getCustomerId());
             pstmt.setString(2, order.getStatus());
-            pstmt.setObject(3, order.getOrderDate());
 
             pstmt.executeUpdate();
-
-            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    Long orderId = generatedKeys.getLong(1);
-                    for (OrderItem item : order.getOrderItems()) {
-                        OrderItem itemWithId = item.withOrderId(orderId);
-                        orderItemRepository.save(itemWithId);
-                    }
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException("주문 저장 중 오류 발생", e);
-            }
 
 
         } catch (SQLException e) {

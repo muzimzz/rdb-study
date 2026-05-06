@@ -1,4 +1,4 @@
-package com.study.rdb_study.domain;
+package com.study.rdb_study.orderItem;
 
 import lombok.Builder;
 import lombok.Getter;

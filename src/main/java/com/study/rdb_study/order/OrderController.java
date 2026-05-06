@@ -1,8 +1,5 @@
-package com.study.rdb_study.controller;
+package com.study.rdb_study.order;
 
-import com.study.rdb_study.dto.OrderRequest;
-import com.study.rdb_study.dto.OrderResponse;
-import com.study.rdb_study.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

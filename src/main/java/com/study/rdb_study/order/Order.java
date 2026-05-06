@@ -1,5 +1,6 @@
-package com.study.rdb_study.domain;
+package com.study.rdb_study.order;
 
+import com.study.rdb_study.orderItem.OrderItem;
 import lombok.*;
 
 import java.time.LocalDateTime;

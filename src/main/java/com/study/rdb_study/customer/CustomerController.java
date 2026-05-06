@@ -1,9 +1,5 @@
-package com.study.rdb_study.controller;
+package com.study.rdb_study.customer;
 
-import com.study.rdb_study.dto.CustomerRequest;
-import com.study.rdb_study.dto.CustomerResponse;
-import com.study.rdb_study.dto.PasswordRequest;
-import com.study.rdb_study.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

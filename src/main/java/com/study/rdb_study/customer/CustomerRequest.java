@@ -1,6 +1,5 @@
-package com.study.rdb_study.dto;
+package com.study.rdb_study.customer;
 
-import com.study.rdb_study.domain.Customer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

@@ -1,13 +1,9 @@
-package com.study.rdb_study.controller;
+package com.study.rdb_study.product;
 
-import com.study.rdb_study.dto.ProductRequest;
-import com.study.rdb_study.dto.ProductResponse;
-import com.study.rdb_study.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/products")
