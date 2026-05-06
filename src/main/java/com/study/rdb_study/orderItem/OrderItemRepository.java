@@ -1,10 +1,12 @@
 package com.study.rdb_study.orderItem;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -23,6 +25,33 @@ public class OrderItemRepository {
     public void increaseQuantity (Long orderId, Long productId, int addQuantity) {
         String sql = "update order_items set quantity=quantity+? where order_id=? and product_id=?";
         jdbcTemplate.update(sql, addQuantity, orderId, productId);
+    }
+
+    // 주문 아이템 1개만 반환
+    public Optional<OrderItem> findByOrderIdAndProductId(Long orderId, Long productId) {
+        String sql = "select order_id, product_id, quantity from order_items where order_id=? and product_id=?";
+//        try {
+//            OrderItem orderItem = jdbcTemplate.queryForObject(sql, (rs, rowNum) -> OrderItem.builder()
+//                    .orderId(rs.getLong("order_id"))
+//                    .productId(rs.getLong("product_id"))
+//                    .quantity(rs.getInt("quantity"))
+//                    .build(), orderId, productId);
+//            return Optional.ofNullable(orderItem);
+//        } catch (EmptyResultDataAccessException e) {
+//            return Optional.empty();
+//        }
+
+        // QueryForObject(): 단건 조회 -> try-catch로 감싸줘야 함
+        // Query(): 리스트로 반환 -> 데이터가 들어가지 않아도 예외 던질 필요x
+        // findById는 Optional<Data>, findAll은 List<Data> return하는 것과 같은 맥락
+        List<OrderItem> result = jdbcTemplate.query(sql, (rs, rowNum) -> OrderItem.builder()
+                .orderId(rs.getLong("order_id"))
+                .productId(rs.getLong("product_id"))
+                .quantity(rs.getInt("quantity"))
+                .build(), orderId, productId);
+
+        return result.stream().findFirst();
+
     }
 
     // findAll()은 모든 주문을 조회하기 때문에 서비스 상 필요x
@@ -46,4 +75,6 @@ public class OrderItemRepository {
         String sql = "delete from order_items where order_id=? and product_id=?";
         jdbcTemplate.update(sql, orderId, productId);
     }
+
+
 }

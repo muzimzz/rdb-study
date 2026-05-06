@@ -12,12 +12,18 @@ public class OrderItemService {
 
     private final OrderItemRepository orderItemRepository;
 
-    public void save(OrderItemRequest request) {
+    public OrderItemResponse save(OrderItemRequest request) {
         orderItemRepository.save(request.toEntity());
+        OrderItem orderItem = orderItemRepository.findByOrderIdAndProductId(request.getOrderId(), request.getProductId())
+                .orElseThrow(() -> new IllegalArgumentException("상품 추가 실패"));
+        return OrderItemResponse.fromEntity(orderItem);
     }
 
-    public void increaseQuantity(Long orderId, Long productId, int addQuantity) {
+    public OrderItemResponse increaseQuantity(Long orderId, Long productId, int addQuantity) {
         orderItemRepository.increaseQuantity(orderId, productId, addQuantity);
+        OrderItem orderItem = orderItemRepository.findByOrderIdAndProductId(orderId, productId)
+                .orElseThrow(() -> new IllegalArgumentException("수량 추가 실패"));
+        return OrderItemResponse.fromEntity(orderItem);
     }
 
     public List<OrderItemResponse> findByOrderId(Long orderId) {
