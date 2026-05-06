@@ -12,12 +12,13 @@ public class CustomerService {
     
     private final CustomerRepository customerRepository;
 
-    public void save(CustomerRequest customerRequest) {
-        customerRepository.save(customerRequest.toEntity());
+    public CustomerResponse save(CustomerRequest customerRequest) {
+        return CustomerResponse.toDto(customerRepository.save(customerRequest.toEntity()));
     }
 
     public CustomerResponse findById(Long id) {
-        return CustomerResponse.toDto(customerRepository.findById(id));
+        return CustomerResponse.toDto(customerRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("고객 조회 실패")));
     }
 
     public List<CustomerResponse> findAll() {
@@ -31,10 +32,8 @@ public class CustomerService {
     }
 
     public void updatePassword(Long id, String inputPassword, String newPassword) {
-        String originPassword = customerRepository.findPasswordById(id);
-        // if (!customerRepository.existsById(id))
-        if (originPassword == null)   // findByid() 쿼리 1번이면 충분. exist 추가쿼리 실행 필요x
-            throw new IllegalArgumentException("존재하지 않는 사용자");
+        String originPassword = customerRepository.findPasswordById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자"));
 
         if (!originPassword.equals(inputPassword))
             throw new IllegalArgumentException("잘못된 비밀번호");

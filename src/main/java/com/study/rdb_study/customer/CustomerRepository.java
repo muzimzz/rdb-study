@@ -1,241 +1,92 @@
 package com.study.rdb_study.customer;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
 public class CustomerRepository {
 
-    private final DataSource dataSource;
+    private final JdbcTemplate jdbcTemplate;
+    private final RowMapper<Customer> customerRowMapper = (rs, rowNum) -> Customer.builder()
+            .customerId(rs.getLong("customer_id"))
+            .name(rs.getString(("name")))
+            .email(rs.getString("email"))
+            .address(rs.getString("address"))
+            .joinDate(rs.getTimestamp("join_date").toLocalDateTime())
+            .build();
 
-    public void save(Customer customer) {
+    public Customer save(Customer customer) {
         String sql = "insert into customers (name, email, password, address) values (?, ?, ?, ?)";
 
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-
-        try {
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(conn -> {
+            PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             pstmt.setString(1, customer.getName());
             pstmt.setString(2, customer.getEmail());
             pstmt.setString(3, customer.getPassword());
             pstmt.setString(4, customer.getAddress());
+            return pstmt;
+        }, keyHolder);
 
-            pstmt.executeUpdate();
-
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            close(conn, pstmt, null);
-        }
+        return findById(keyHolder.getKey().longValue())
+                .orElseThrow(() -> new IllegalArgumentException("고객 조회 실패"));
     }
 
-    public Customer findById(Long id) {
+    public Optional<Customer> findById(Long id) {
         String sql = "select customer_id, name, email, address, join_date from customers where customer_id=?";
 
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
-
-            pstmt.setLong(1, id);
-
-            rs = pstmt.executeQuery();
-            if (rs.next()) {
-                Customer customer = mapRow(rs);
-                return customer;
-
-            } else {
-                return null;
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            close(conn, pstmt, rs);
-        }
+        List<Customer> result = jdbcTemplate.query(sql, customerRowMapper, id);
+        return result.stream().findFirst();
     }
 
-    public String findPasswordById(Long id) {
+    public Optional<String> findPasswordById(Long id) {
         String sql = "select password from customers where customer_id=?";
 
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
+        List<String> result = jdbcTemplate.query(sql, (rs, rowNum) -> {
+            return rs.getString(1);
+            } ,id);
 
-        try {
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
-
-            pstmt.setLong(1, id);
-
-            rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getString(1);
-
-            } else {
-                return null;
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            close(conn, pstmt, rs);
-        }
+        return result.stream().findFirst();
     }
 
     public List<Customer> findAll() {
         String sql = "select customer_id, name, email, address, join_date from customers";
 
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
-            rs = pstmt.executeQuery();
-            List<Customer> customers = new ArrayList<>();
-            while (rs.next()) {
-                customers.add(mapRow(rs));
-            }
-            return customers;
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally  {
-            close(conn, pstmt, rs);
-        }
+        return jdbcTemplate.query(sql, customerRowMapper);
     }
 
     public void update(Customer customer) {
         String sql = "update customers set email=?, address=? where customer_id=?";
 
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-
-        try {
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
-
-            pstmt.setString(1, customer.getEmail());
-            pstmt.setString(2, customer.getAddress());
-            pstmt.setLong(3, customer.getCustomerId());
-
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            close(conn, pstmt, null);
-        }
+        jdbcTemplate.update(sql, customer.getEmail(), customer.getAddress(), customer.getCustomerId());
     }
 
     public void updatePassword(Long id, String newPassword) {
         String sql = "update customers set password=? where customer_id=?";
 
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-
-        try {
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
-
-            pstmt.setString(1, newPassword);
-            pstmt.setLong(2, id);
-
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            close(conn, pstmt, null);
-        }
+        jdbcTemplate.update(sql, newPassword, id);
     }
 
     public void deleteById(Long id) {
         String sql = "delete from customers where customer_id=?";
 
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-
-        try {
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setLong(1, id);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            close(conn, pstmt, null);
-        }
+        jdbcTemplate.update(sql, id);
     }
 
     public boolean existsById(Long id) {
         String sql = "select count(*) from customers where customer_id=?";
 
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
 
-        try {
-            conn = dataSource.getConnection();
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setLong(1, id);
-            rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getLong(1) > 0;
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            close(conn, pstmt, null);
-        }
-
-        return false;
+        return count != null && count > 0;
     }
-
-    private Customer mapRow(ResultSet rs) throws SQLException {
-        return Customer.builder()
-                .customerId(rs.getLong("customer_id"))
-                .name(rs.getString("name"))
-                .email(rs.getString("email"))
-                .address(rs.getString("address"))
-                .joinDate(rs.getTimestamp("join_date").toLocalDateTime())
-                .build();
-    }
-
-    private void close(Connection conn, Statement pstmt, ResultSet rs) {
-        if (rs != null) {
-            try {
-                rs.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        if (pstmt != null) {
-            try {
-                pstmt.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        if (conn != null) {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-
 }
