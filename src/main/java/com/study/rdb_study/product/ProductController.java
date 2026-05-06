@@ -1,8 +1,11 @@
 package com.study.rdb_study.product;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -13,29 +16,46 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    public ProductResponse save(@RequestBody ProductRequest request) {
-        return productService.save(request);
+    public ResponseEntity<ProductResponse> save(@RequestBody ProductRequest request) {
+        ProductResponse response = productService.save(request);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(response.getProductId())
+                .toUri();
+
+        return ResponseEntity
+                // .created(URI.create("/products/" + response.getProductId()))
+                .created(location)
+                .body(response);
     }
 
     @GetMapping("/{id}")
-    public ProductResponse findById(@PathVariable Long id) {
-        return productService.findById(id);
+    public ResponseEntity<ProductResponse> findById(@PathVariable Long id) {
+        ProductResponse response = productService.findById(id);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping
-    public List<ProductResponse> findAll () {
-        return productService.findAll();
+    public ResponseEntity<List<ProductResponse>> findAll () {
+        return ResponseEntity.ok(productService.findAll());
     }
 
     @PutMapping("/{id}")
-    public void update(@PathVariable Long id,
+    public ResponseEntity<Void> update(@PathVariable Long id,
                        @RequestBody ProductRequest request) {
         productService.update(id, request);
+
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public void deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         productService.deleteById(id);
-    }
 
+        return ResponseEntity.noContent().build();
+
+    }
 }

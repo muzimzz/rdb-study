@@ -1,40 +1,51 @@
 package com.study.rdb_study.order;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("orders")
+@RequestMapping("/orders")
 public class OrderController {
 
     private final OrderService orderService;
 
     @PostMapping
-    public OrderResponse save(@RequestBody OrderRequest orderRequest) {
-        return orderService.save(orderRequest);
+    public ResponseEntity<OrderResponse> save(@RequestBody OrderRequest orderRequest) {
+        OrderResponse response = orderService.save(orderRequest);
+
+        return ResponseEntity
+                .created(URI.create("/orders/" + response.getOrderId()))
+                .body(response);
     }
 
     @GetMapping("/{id}")
-    public OrderResponse findById(@PathVariable Long id) {
-        return orderService.findById(id);
+    public ResponseEntity<OrderResponse> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.findById(id));
     }
 
     @GetMapping
-    public List<OrderResponse> findAll() {
-        return orderService.findAll();
+    public ResponseEntity<List<OrderResponse>> findAll() {
+        return ResponseEntity.ok(orderService.findAll());
     }
 
     @PutMapping("/{id}")
-    public void update(@PathVariable Long id,
+    public ResponseEntity<Void> update(@PathVariable Long id,
                        @RequestBody OrderRequest orderRequest) {
         orderService.update(id, orderRequest);
+
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         orderService.deleteById(id);
+
+        return ResponseEntity.noContent().build();
     }
 }
