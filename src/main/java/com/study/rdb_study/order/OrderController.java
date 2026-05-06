@@ -13,8 +13,8 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public void save(@RequestBody OrderRequest orderRequest) {
-        orderService.save(orderRequest);
+    public OrderResponse save(@RequestBody OrderRequest orderRequest) {
+        return orderService.save(orderRequest);
     }
 
     @GetMapping("/{id}")
