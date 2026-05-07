@@ -13,7 +13,8 @@ public class Order {
     private Long customerId;
     private LocalDateTime orderDate;
     private String status;
-    private List<OrderItem> orderItems;
+    // JPA: Entity에 List(연관관계) 넣기, JDBC: Response에만 넣기
+    // private List<OrderItem> orderItems;
 
     @Builder
     public Order(Long orderId, Long customerId, LocalDateTime orderDate, String status, List<OrderItem> orderItems) {
@@ -21,6 +22,5 @@ public class Order {
         this.customerId = customerId;
         this.orderDate = orderDate;
         this.status = status;
-        this.orderItems = orderItems;
     }
 }
