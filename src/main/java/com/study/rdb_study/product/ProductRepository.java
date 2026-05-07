@@ -7,9 +7,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -80,5 +78,21 @@ public class ProductRepository {
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
 
         return count != null && count > 0;
+    }
+
+    /**
+     * 재고 차감 메서드.
+     * WHERE 조건에 stock_quantity >= quantity를 추가해서
+     * 재고가 부족하면 UPDATE가 0 row를 건드리게 만듦 → 롤백 트리거.
+     * 이렇게 하면 동시에 여러 요청이 와도 DB 레벨에서 음수 재고를 막을 수 있음.
+     */
+    public void decreaseStock(Long productId, int quantity) {
+        String sql = "update products set stock_quantity = stock_quantity - ? " +
+                     "where product_id = ? and stock_quantity >= ?";
+
+        // 영향받은 row가 0이면 재고 부족 (또는 동시 요청으로 인한 race condition)
+        int updatedRows = jdbcTemplate.update(sql, quantity, productId, quantity);
+        if (updatedRows == 0)
+            throw new IllegalArgumentException("재고가 부족합니다.");
     }
 }
