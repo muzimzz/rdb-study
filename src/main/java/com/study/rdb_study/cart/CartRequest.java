@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class CartRequest {
-    public Long customerId;
+    private Long customerId;
 
     public Cart toEntity() {
         return Cart.builder()
