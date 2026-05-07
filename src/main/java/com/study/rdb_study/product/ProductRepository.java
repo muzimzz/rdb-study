@@ -90,4 +90,9 @@ public class ProductRepository {
         if (updatedRows == 0)
             throw new IllegalArgumentException("재고가 부족합니다.");
     }
+
+    public void increaseStock(Long productId, int quantity) {
+        String sql = "update products set stock_quantity = stock_quantity + ? where product_id = ?";
+        jdbcTemplate.update(sql, quantity, productId);
+    }
 }

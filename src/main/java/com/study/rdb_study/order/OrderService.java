@@ -84,7 +84,13 @@ public class OrderService {
 
     public void deleteById(Long id) {
         if (!orderRepository.existsById(id))
-            throw new IllegalArgumentException("존재하지 않는 주문");
+            throw new IllegalArgumentException("존재하지 않는 주문, orderId: " + id);
+
+        // 추후에 deleteById: DB에서 진짜 삭제가 아닌 취소된 주문 DB에 저장 후 처리 (Soft Delete)
+        List<OrderItem> orderItems = orderItemRepository.findByOrderId(id);
+        for (OrderItem orderItem : orderItems) {
+            productRepository.increaseStock(orderItem.getProductId(), orderItem.getQuantity());
+        }
         orderRepository.deleteById(id);
     }
 }
