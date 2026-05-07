@@ -1,6 +1,5 @@
 package com.study.rdb_study.product;
 
-import com.study.rdb_study.order.Order;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
