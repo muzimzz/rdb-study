@@ -50,6 +50,9 @@ public class OrderService {
     }
 
     public void update(Long id, OrderRequest orderRequest) {
+        if (!orderRepository.existsById(id))
+            throw new IllegalArgumentException("존재하지 않는 주문");
+
         orderRepository.update(orderRequest.toEntityWithId(id));
     }
 

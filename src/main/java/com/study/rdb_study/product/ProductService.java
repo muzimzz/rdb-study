@@ -39,6 +39,8 @@ public class ProductService {
     }
 
     public void update(Long id, ProductRequest request) {
+        if (!productRepository.existsById(id))
+            throw new IllegalArgumentException("존재하지 않는 상품");
         productRepository.update(request.toEntityWithId(id));
     }
 
