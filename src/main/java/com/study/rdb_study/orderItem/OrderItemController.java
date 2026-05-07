@@ -26,13 +26,14 @@ public class OrderItemController {
                 .body(response);
     }
 
-    @PatchMapping({"/{orderId}/{productId}"})
-    public ResponseEntity<OrderItemResponse > increaseQuantity(@PathVariable Long orderId,
-                                                          @PathVariable Long productId,
-                                                          @RequestParam int addQuantity) {
-        OrderItemResponse response = orderItemService.increaseQuantity(orderId, productId, addQuantity);
-        return ResponseEntity.ok(response);
-    }
+//    OrderItem대신 CartItem에 구현
+//    @PatchMapping({"/{orderId}/{productId}"})
+//    public ResponseEntity<OrderItemResponse> increaseQuantity(@PathVariable Long orderId,
+//                                                          @PathVariable Long productId,
+//                                                          @RequestParam int addQuantity) {
+//        OrderItemResponse response = orderItemService.increaseQuantity(orderId, productId, addQuantity);
+//        return ResponseEntity.ok(response);
+//    }
 
     @GetMapping("/{orderId}")
     public ResponseEntity<List<OrderItemResponse>> findByOrderId(@PathVariable Long orderId) {

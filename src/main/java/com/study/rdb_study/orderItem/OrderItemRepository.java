@@ -29,11 +29,12 @@ public class OrderItemRepository {
         return findByOrderIdAndProductId(orderItem.getOrderId(), orderItem.getProductId())
                 .orElseThrow(() -> new IllegalArgumentException("저장된 데이터 조회 실패"));
     }
-
-    public void increaseQuantity (Long orderId, Long productId, int addQuantity) {
-        String sql = "update order_items set quantity=quantity+? where order_id=? and product_id=?";
-        jdbcTemplate.update(sql, addQuantity, orderId, productId);
-    }
+    
+//    OrderItem대신에 CartItem에 구현
+//    public void increaseQuantity (Long orderId, Long productId, int addQuantity) {
+//        String sql = "update order_items set quantity=quantity+? where order_id=? and product_id=?";
+//        jdbcTemplate.update(sql, addQuantity, orderId, productId);
+//    }
 
     // 주문 아이템 1개만 반환
     public Optional<OrderItem> findByOrderIdAndProductId(Long orderId, Long productId) {
