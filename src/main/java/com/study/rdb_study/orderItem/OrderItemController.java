@@ -17,7 +17,7 @@ public class OrderItemController {
     @PostMapping
     public ResponseEntity<OrderItemResponse> save(@RequestBody OrderItemRequest request) {
         OrderItemResponse response = orderItemService.save(request);
-        URI location = URI.create(String.format("/api/order-items/orders/%d/products/%d",
+        URI location = URI.create(String.format("/order-items/orders/%d/products/%d",
                 response.getOrderId(),
                 response.getProductId()));
 

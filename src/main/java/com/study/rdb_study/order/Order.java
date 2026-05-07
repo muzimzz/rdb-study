@@ -17,7 +17,7 @@ public class Order {
     // private List<OrderItem> orderItems;
 
     @Builder
-    public Order(Long orderId, Long customerId, LocalDateTime orderDate, String status, List<OrderItem> orderItems) {
+    public Order(Long orderId, Long customerId, LocalDateTime orderDate, String status) {
         this.orderId = orderId;
         this.customerId = customerId;
         this.orderDate = orderDate;
