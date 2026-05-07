@@ -23,6 +23,7 @@ public class CustomerRequest {
                 .build();
     }
 
+    // 로그인/세션 구현하면 id빼기
     // update()용: password 제외
     // 비밀번호 변경은 PasswordRequest
     public Customer toEntity(Long id) {
