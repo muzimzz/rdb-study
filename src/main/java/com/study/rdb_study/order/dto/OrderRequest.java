@@ -17,7 +17,7 @@ public class OrderRequest {
     public Order toEntity() {
         return Order.builder()
                 .customerId(this.customerId)
-                .status(this.status)
+                .status("PENDING") // 주문 생성 시 무조건 PENDING으로 고정
                 .build();
     }
 
@@ -25,7 +25,7 @@ public class OrderRequest {
         return Order.builder()
                 .orderId(id)
                 .customerId(this.customerId)
-                .status(this.status)
+                .status("PENDING") // 주문 생성 시 무조건 PENDING으로 고정
                 .build();
     }
 }
