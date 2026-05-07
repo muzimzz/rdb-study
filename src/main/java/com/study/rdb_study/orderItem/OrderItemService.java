@@ -22,12 +22,13 @@ public class OrderItemService {
         return OrderItemResponse.toDto(orderItem);
     }
 
-    public OrderItemResponse increaseQuantity(Long orderId, Long productId, int addQuantity) {
-        orderItemRepository.increaseQuantity(orderId, productId, addQuantity);
-        OrderItem orderItem = orderItemRepository.findByOrderIdAndProductId(orderId, productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품 조회 실패"));
-        return OrderItemResponse.toDto(orderItem);
-    }
+//    OrderItem대신 CartItem에 구현
+//    public OrderItemResponse increaseQuantity(Long orderId, Long productId, int addQuantity) {
+//        orderItemRepository.increaseQuantity(orderId, productId, addQuantity);
+//        OrderItem orderItem = orderItemRepository.findByOrderIdAndProductId(orderId, productId)
+//                .orElseThrow(() -> new IllegalArgumentException("상품 조회 실패"));
+//        return OrderItemResponse.toDto(orderItem);
+//    }
 
     @Transactional(readOnly = true)
     public List<OrderItemResponse> findByOrderId(Long orderId) {
