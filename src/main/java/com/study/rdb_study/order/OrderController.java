@@ -1,9 +1,11 @@
 package com.study.rdb_study.order;
 
+import com.study.rdb_study.order.dto.OrderDetailResponse;
+import com.study.rdb_study.order.dto.OrderRequest;
+import com.study.rdb_study.order.dto.OrderResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
@@ -25,7 +27,7 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OrderResponse> findById(@PathVariable Long id) {
+    public ResponseEntity<OrderDetailResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.findById(id));
     }
 

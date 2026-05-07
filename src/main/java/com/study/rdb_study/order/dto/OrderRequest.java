@@ -1,5 +1,6 @@
-package com.study.rdb_study.order;
+package com.study.rdb_study.order.dto;
 
+import com.study.rdb_study.order.Order;
 import com.study.rdb_study.orderItem.OrderItemRequest;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,8 +1,12 @@
 package com.study.rdb_study.order;
 
+import com.study.rdb_study.order.dto.OrderDetailResponse;
+import com.study.rdb_study.order.dto.OrderRequest;
+import com.study.rdb_study.order.dto.OrderResponse;
+import com.study.rdb_study.orderItem.OrderItem;
 import com.study.rdb_study.orderItem.OrderItemRepository;
 import com.study.rdb_study.orderItem.OrderItemRequest;
-import com.study.rdb_study.orderItem.OrderItemService;
+import com.study.rdb_study.orderItem.OrderItemResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,10 +32,14 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public OrderResponse findById(Long id) {
+    public OrderDetailResponse findById(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("주문 조회 실패"));
-        return OrderResponse.toDto(order);
+
+        List<OrderItem> orderItems = orderItemRepository.findByOrderId(id);
+        return OrderDetailResponse.toDto(order, orderItems.stream()
+                .map(OrderItemResponse::toDto)
+                .collect(Collectors.toList()));
     }
 
     @Transactional(readOnly = true)
