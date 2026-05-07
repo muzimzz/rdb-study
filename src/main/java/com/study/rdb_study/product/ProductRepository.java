@@ -80,13 +80,8 @@ public class ProductRepository {
         return count != null && count > 0;
     }
 
-    /**
-     * 재고 차감 메서드.
-     * WHERE 조건에 stock_quantity >= quantity를 추가해서
-     * 재고가 부족하면 UPDATE가 0 row를 건드리게 만듦 → 롤백 트리거.
-     * 이렇게 하면 동시에 여러 요청이 와도 DB 레벨에서 음수 재고를 막을 수 있음.
-     */
     public void decreaseStock(Long productId, int quantity) {
+        // product.save() 시점의 quantity는 업데이트 되지 않기 때문에 DB레벨에서 stock_quantity를 검사한다
         String sql = "update products set stock_quantity = stock_quantity - ? " +
                      "where product_id = ? and stock_quantity >= ?";
 
