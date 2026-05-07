@@ -1,8 +1,10 @@
 package com.study.rdb_study.customer;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -13,33 +15,41 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @PostMapping
-    public void save(@RequestBody CustomerRequest request) {
-        customerService.save(request);
+    public ResponseEntity<CustomerResponse> save(@RequestBody CustomerRequest request) {
+        CustomerResponse response = customerService.save(request);
+
+        return ResponseEntity
+                .created(URI.create("/customers/" + response.getCustomerId()))
+                .body(response);
     }
 
     @GetMapping("/{id}")
-    public CustomerResponse findById(@PathVariable Long id) {
-        return customerService.findById(id);
+    public ResponseEntity<CustomerResponse> findById(@PathVariable Long id) {
+        CustomerResponse response = customerService.findById(id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping
-    public List<CustomerResponse> findAll() {
-        return customerService.findAll();
+    public ResponseEntity<List<CustomerResponse>> findAll() {
+        return ResponseEntity.ok(customerService.findAll());
     }
 
     @PutMapping("/{id}")
-    public void update(@PathVariable Long id,
+    public ResponseEntity<Void> update(@PathVariable Long id,
                        @RequestBody CustomerRequest request) {
         customerService.update(id, request);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/changePassword/{id}")
-    public void updatePassword(@PathVariable Long id, @RequestBody PasswordRequest request) {
+    public ResponseEntity<Void> updatePassword(@PathVariable Long id, @RequestBody PasswordChangeRequest request) {
         customerService.updatePassword(id, request.getInputPassword(), request.getNewPassword());
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         customerService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }
