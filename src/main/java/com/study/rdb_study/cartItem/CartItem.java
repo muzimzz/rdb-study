@@ -7,14 +7,14 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class CartItem {
-    private Long id;
+    private Long cartItemId;
     private Long cartId;
     private Long productId;
     private int quantity;
 
     @Builder
-    public CartItem(Long id, Long cartId, Long productId, int quantity) {
-        this.id = id;
+    public CartItem(Long cartItemId, Long cartId, Long productId, int quantity) {
+        this.cartItemId = cartItemId;
         this.cartId = cartId;
         this.productId = productId;
         this.quantity = quantity;
