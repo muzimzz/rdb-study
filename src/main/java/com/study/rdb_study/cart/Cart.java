@@ -14,6 +14,7 @@ public class Cart {
     private Long id;
     private Long customerId;
     private LocalDateTime createdAt;
+    // private List<CartResponse>
 
     @Builder
     public Cart(Long id, Long customerId, LocalDateTime createdAt) {
