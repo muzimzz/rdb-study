@@ -69,6 +69,14 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
+    public List<OrderResponse> findByCustomerId(Long customerId) {
+
+        return orderRepository.findByCustomerId(customerId).stream()
+                .map(OrderResponse::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public List<OrderResponse> findAll() {
         return orderRepository.findAll().stream()
                 .map(OrderResponse::toDto)
@@ -93,4 +101,6 @@ public class OrderService {
         }
         orderRepository.deleteById(id);
     }
+
+
 }

@@ -46,6 +46,12 @@ public class OrderRepository {
                 .findFirst();
     }
 
+    public List<Order> findByCustomerId(Long id) {
+        String sql = "select order_id, customer_id, order_date, status from orders where customer_id=?";
+
+        return jdbcTemplate.query(sql, orderRowMapper, id);
+    }
+
     public List<Order> findAll() {
         String sql = "select order_id, customer_id, order_date, status from orders";
 
@@ -72,4 +78,6 @@ public class OrderRepository {
 
         return count != null && count > 0;
     }
+
+
 }
