@@ -25,7 +25,7 @@ public class OrderRequest {
         return Order.builder()
                 .orderId(id)
                 .customerId(this.customerId)
-                .status("PENDING") // 주문 생성 시 무조건 PENDING으로 고정
+                .status(this.status) // update에 사용: 배송상태 변경 가능하도록 받기
                 .build();
     }
 }
