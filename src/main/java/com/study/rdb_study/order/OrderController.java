@@ -42,7 +42,7 @@ public class OrderController {
         return ResponseEntity.ok(orderService.findAll());
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable Long id,
                        @RequestBody OrderRequest orderRequest) {
         orderService.update(id, orderRequest);
