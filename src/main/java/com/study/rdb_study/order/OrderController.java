@@ -1,7 +1,7 @@
 package com.study.rdb_study.order;
 
 import com.study.rdb_study.order.dto.OrderDetailResponse;
-import com.study.rdb_study.order.dto.OrderRequest;
+import com.study.rdb_study.order.dto.OrderCreateRequest;
 import com.study.rdb_study.order.dto.OrderResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,42 +18,44 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<OrderResponse> save(@RequestBody OrderRequest orderRequest) {
-        OrderResponse response = orderService.save(orderRequest);
+    public ResponseEntity<OrderResponse> save(@RequestBody OrderCreateRequest orderCreateRequest) {
+        OrderResponse response = orderService.save(orderCreateRequest);
 
         return ResponseEntity
                 .created(URI.create("/orders/" + response.getOrderId()))
                 .body(response);
     }
 
-    @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<OrderResponse>> findByCustomerId(@PathVariable Long customerId) {
+    @GetMapping
+    public ResponseEntity<List<OrderResponse>> findByCustomerId(@RequestParam Long customerId) {
         List<OrderResponse> response = orderService.findByCustomerId(customerId);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OrderDetailResponse> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(orderService.findById(id));
+    public ResponseEntity<OrderDetailResponse> findById(@PathVariable Long id, @RequestParam Long customerId) {
+        return ResponseEntity.ok(orderService.findById(id, customerId));
     }
 
-    @GetMapping
-    public ResponseEntity<List<OrderResponse>> findAll() {
-        return ResponseEntity.ok(orderService.findAll());
-    }
+    // 관리자용
+//    @GetMapping
+//    public ResponseEntity<List<OrderResponse>> findAll() {
+//        return ResponseEntity.ok(orderService.findAll());
+//    }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<Void> update(@PathVariable Long id,
-                       @RequestBody OrderRequest orderRequest) {
-        orderService.update(id, orderRequest);
+    // 관리자용
+//    @PatchMapping("/{id}")
+//    public ResponseEntity<Void> update(@PathVariable Long id,
+//                       @RequestBody  orderRequest) {
+//        orderService.update(id, orderRequest);
+//
+//        return ResponseEntity.noContent().build();
+//    }
 
+    @PatchMapping("/{id}/cancel")
+    public ResponseEntity<Void> cancelOrder(@PathVariable Long id) {
+        orderService.cancelOrder(id);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        orderService.deleteById(id);
-
-        return ResponseEntity.noContent().build();
-    }
 }
