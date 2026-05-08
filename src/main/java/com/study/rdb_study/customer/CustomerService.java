@@ -58,7 +58,7 @@ public class CustomerService {
 
     public void withdraw(Long id) {
         Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(" 존재하지 않는 사용자"));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자"));
 
         if (customer.getStatus().equals("INACTIVE")) {
             throw new IllegalArgumentException("이미 탈퇴한 사용자");
