@@ -15,7 +15,6 @@ public class CustomerResponse {
     private String name;
     private String email;
     private String address;
-    private String status;
     private LocalDateTime joinDate;
 
     public static CustomerResponse toDto(Customer customer) {
