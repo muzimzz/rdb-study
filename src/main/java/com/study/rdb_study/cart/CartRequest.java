@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 public class CartRequest {
     private Long customerId;
 
-    @Builder
     public Cart toEntity() {
         return Cart.builder()
                 .customerId(this.customerId)
