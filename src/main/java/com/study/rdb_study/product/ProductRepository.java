@@ -15,12 +15,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ProductRepository {
 
-//    private final JdbcTemplate jdbcTemplate;
-//
-//    public ProductRepository(DataSource dataSource) {
-//        this.jdbcTemplate = new JdbcTemplate(dataSource);
-//    }
-
     private final JdbcTemplate jdbcTemplate;
     private final RowMapper<Product> productRowMapper = (rs, rowNum) -> Product.builder()
             .productId(rs.getLong("product_id"))
