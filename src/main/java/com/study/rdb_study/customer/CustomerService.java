@@ -32,8 +32,9 @@ public class CustomerService {
     }
 
     public void update(Long id, CustomerRequest customerRequest) {
-        String originPassword = customerRepository.findPasswordById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자"));
+        if (!customerRepository.existsById(id)) {
+            throw new IllegalArgumentException("존재하지 않는 사용자");
+        }
 
         customerRepository.update(customerRequest.toEntity(id));
     }
