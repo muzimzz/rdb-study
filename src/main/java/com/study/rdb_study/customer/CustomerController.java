@@ -15,8 +15,8 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @PostMapping
-    public ResponseEntity<CustomerResponse> save(@RequestBody CustomerRequest request) {
-        CustomerResponse response = customerService.save(request);
+    public ResponseEntity<CustomerResponse> join(@RequestBody CustomerRequest request) {
+        CustomerResponse response = customerService.join(request);
 
         return ResponseEntity
                 .created(URI.create("/customers/" + response.getCustomerId()))

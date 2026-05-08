@@ -1,5 +1,7 @@
 package com.study.rdb_study.customer;
 
+import com.study.rdb_study.cart.Cart;
+import com.study.rdb_study.cart.CartRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,9 +15,14 @@ import java.util.stream.Collectors;
 public class CustomerService {
     
     private final CustomerRepository customerRepository;
+    private final CartRepository cartRepository;
 
-    public CustomerResponse save(CustomerRequest customerRequest) {
-        return CustomerResponse.toDto(customerRepository.save(customerRequest.toEntity()));
+    public CustomerResponse join(CustomerRequest customerRequest) {
+        Customer customer = customerRepository.save(customerRequest.toEntity());
+        cartRepository.save(Cart.builder()
+                .customerId(customer.getCustomerId())
+                .build());
+        return CustomerResponse.toDto(customer);
     }
 
     @Transactional(readOnly = true)
