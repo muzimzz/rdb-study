@@ -1,10 +1,8 @@
 package com.study.rdb_study.cart;
 
-import com.study.rdb_study.cartItem.CartItem;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import java.util.List;
 
 @Getter
 @NoArgsConstructor

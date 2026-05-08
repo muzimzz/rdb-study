@@ -35,7 +35,7 @@ public class CartRepository {
     }
 
     public Optional<Cart> findByCustomerId(Long customerId) {
-        String sql = "select * from carts where customer_id=?";
+        String sql = "select cart_id, customer_id from carts where customer_id=?";
         List<Cart> result = jdbcTemplate.query(sql, cartRowMapper, customerId);
 
         return result.stream().findFirst();
