@@ -41,7 +41,7 @@ public class CustomerController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/changePassword/{id}")
+    @PatchMapping("/{id}/password")
     public ResponseEntity<Void> updatePassword(@PathVariable Long id, @RequestBody PasswordChangeRequest request) {
         customerService.updatePassword(id, request.getInputPassword(), request.getNewPassword());
         return ResponseEntity.noContent().build();
