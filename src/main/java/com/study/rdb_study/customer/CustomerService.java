@@ -64,7 +64,7 @@ public class CustomerService {
             throw new IllegalArgumentException("이미 탈퇴한 사용자");
         }
 
-        else customerRepository.updateStatus(id, "INACTIVE");
+        customerRepository.updateStatus(id, "INACTIVE");
     }
 
 
