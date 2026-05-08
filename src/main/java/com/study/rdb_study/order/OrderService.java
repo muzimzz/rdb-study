@@ -85,7 +85,7 @@ public class OrderService {
     @Transactional(readOnly = true)
     public List<OrderResponse> findAll() {
         return orderRepository.findAll().stream()
-                    .map(OrderResponse::toDto)
+                .map(OrderResponse::toDto)
                 .collect(Collectors.toList());
     }
 
