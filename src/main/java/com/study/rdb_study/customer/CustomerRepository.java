@@ -21,11 +21,12 @@ public class CustomerRepository {
             .name(rs.getString(("name")))
             .email(rs.getString("email"))
             .address(rs.getString("address"))
+            .status(rs.getString("status"))
             .joinDate(rs.getTimestamp("join_date").toLocalDateTime())
             .build();
 
     public Customer save(Customer customer) {
-        String sql = "insert into customers (name, email, password, address) values (?, ?, ?, ?)";
+        String sql = "insert into customers (name, email, password, address, status) values (?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(conn -> {
@@ -34,6 +35,7 @@ public class CustomerRepository {
             pstmt.setString(2, customer.getEmail());
             pstmt.setString(3, customer.getPassword());
             pstmt.setString(4, customer.getAddress());
+            pstmt.setString(5, customer.getStatus());
             return pstmt;
         }, keyHolder);
 
@@ -42,7 +44,7 @@ public class CustomerRepository {
     }
 
     public Optional<Customer> findById(Long id) {
-        String sql = "select customer_id, name, email, address, join_date from customers where customer_id=?";
+        String sql = "select customer_id, name, email, address, status, join_date from customers where customer_id=?";
 
         List<Customer> result = jdbcTemplate.query(sql, customerRowMapper, id);
         return result.stream().findFirst();
@@ -59,7 +61,7 @@ public class CustomerRepository {
     }
 
     public List<Customer> findAll() {
-        String sql = "select customer_id, name, email, address, join_date from customers";
+        String sql = "select customer_id, name, email, address, status, join_date from customers";
 
         return jdbcTemplate.query(sql, customerRowMapper);
     }
@@ -76,10 +78,10 @@ public class CustomerRepository {
         jdbcTemplate.update(sql, newPassword, id);
     }
 
-    public void deleteById(Long id) {
-        String sql = "delete from customers where customer_id=?";
+    public void updateStatus(Long id, String status) {
+        String sql = "update customers set status=? where customer_id=?";
 
-        jdbcTemplate.update(sql, id);
+        jdbcTemplate.update(sql, status, id);
     }
 
     public boolean existsById(Long id) {

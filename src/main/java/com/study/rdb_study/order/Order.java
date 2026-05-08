@@ -1,10 +1,7 @@
 package com.study.rdb_study.order;
 
-import com.study.rdb_study.orderItem.OrderItem;
 import lombok.*;
-
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @NoArgsConstructor

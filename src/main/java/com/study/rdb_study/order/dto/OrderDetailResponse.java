@@ -1,7 +1,6 @@
 package com.study.rdb_study.order.dto;
 
 import com.study.rdb_study.order.Order;
-import com.study.rdb_study.orderItem.OrderItem;
 import com.study.rdb_study.orderItem.OrderItemResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +8,6 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @AllArgsConstructor

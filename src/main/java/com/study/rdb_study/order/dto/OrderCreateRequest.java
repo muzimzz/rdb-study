@@ -9,9 +9,9 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class OrderRequest {
+public class OrderCreateRequest {
     private Long customerId;
-    private String status;
+    // private String status; --관리자용
     private List<OrderItemRequest> items;
 
     public Order toEntity() {
@@ -21,11 +21,12 @@ public class OrderRequest {
                 .build();
     }
 
-    public Order toEntityWithId(Long id) {
-        return Order.builder()
-                .orderId(id)
-                .customerId(this.customerId)
-                .status(this.status) // update에 사용: 배송상태 변경 가능하도록 받기
-                .build();
-    }
+    // 관리자용
+//    public Order toEntityWithId(Long id) {
+//        return Order.builder()
+//                .orderId(id)
+//                .customerId(this.customerId)
+//                .status(this.status) // update에 사용: 배송상태 변경 가능하도록 받기
+//                .build();
+//    }
 }

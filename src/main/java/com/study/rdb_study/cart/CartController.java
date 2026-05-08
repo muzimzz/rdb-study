@@ -1,0 +1,18 @@
+package com.study.rdb_study.cart;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/carts")
+public class CartController {
+
+    private final CartService cartService;
+
+    @GetMapping
+    public ResponseEntity<CartResponse> findByCustomerId(@RequestParam Long customerId) {
+        return ResponseEntity.ok(cartService.findByCustomerId(customerId));
+    }
+}

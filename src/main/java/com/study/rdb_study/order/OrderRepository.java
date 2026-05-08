@@ -52,18 +52,21 @@ public class OrderRepository {
         return jdbcTemplate.query(sql, orderRowMapper, id);
     }
 
+    // 관리자용
     public List<Order> findAll() {
         String sql = "select order_id, customer_id, order_date, status from orders";
 
         return jdbcTemplate.query(sql, orderRowMapper);
     }
 
+    // 관리자용
     public void update(Order newOrder) {
         String sql = "update orders set status=? where order_id=?";
 
         jdbcTemplate.update(sql, newOrder.getStatus(), newOrder.getOrderId());
     }
 
+    // 관리자용
     public void deleteById(Long id) {
         String sql = "delete from orders where order_id=?";
 
@@ -71,7 +74,6 @@ public class OrderRepository {
     }
 
     public boolean existsById(Long id) {
-
         String sql = "select count(*) from orders where order_id=?";
 
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
@@ -79,5 +81,8 @@ public class OrderRepository {
         return count != null && count > 0;
     }
 
-
+    public void updateStatus(Long id, String status) {
+        String sql = "update orders set status=? where order_id=?";
+        jdbcTemplate.update(sql, status, id);
+    }
 }

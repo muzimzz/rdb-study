@@ -15,12 +15,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ProductRepository {
 
-//    private final JdbcTemplate jdbcTemplate;
-//
-//    public ProductRepository(DataSource dataSource) {
-//        this.jdbcTemplate = new JdbcTemplate(dataSource);
-//    }
-
     private final JdbcTemplate jdbcTemplate;
     private final RowMapper<Product> productRowMapper = (rs, rowNum) -> Product.builder()
             .productId(rs.getLong("product_id"))
@@ -30,6 +24,7 @@ public class ProductRepository {
             .description(rs.getString("description"))
             .build();
 
+    // 관리자용
     public Product save(Product product) {
         String sql = "insert into products (name, price, stock_quantity, description) values (?, ?, ?, ?)";
 
@@ -61,12 +56,14 @@ public class ProductRepository {
         return jdbcTemplate.query(sql, productRowMapper);
     }
 
+    // 관리자용
     public void update(Product product) {
         String sql = "update products set name=?, price=?, stock_quantity=?, description=? where product_id=?";
 
         jdbcTemplate.update(sql, product.getName(), product.getPrice(), product.getStockQuantity(), product.getDescription(), product.getProductId());
     }
 
+    // 관리자용
     public void deleteById(Long id) {
         String sql = "delete from products where product_id=?";
 

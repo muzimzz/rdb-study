@@ -30,12 +30,6 @@ public class ProductService {
                 .map(ProductResponse::toDto)
                 .collect(Collectors.toList());
         //      .toList(); Java16부터 사용가능, 불변리스트 반환
-
-//        List<Product> products = productRepository.findAll();
-//        List<ProductResponse> productResponses = new ArrayList<>();
-//        for (Product product : products)
-//            productResponses.add(ProductResponse.fromEntity(product));
-//        return productResponses;
     }
 
     public void update(Long id, ProductRequest request) {
@@ -46,7 +40,6 @@ public class ProductService {
 
     public void deleteById(Long id) {
 
-        // if (findById(id) == null)
         if (!productRepository.existsById(id))
             throw new IllegalArgumentException("존재하지 않는 상품");
 
