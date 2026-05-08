@@ -60,7 +60,7 @@ public class CustomerController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}")
+    @PatchMapping("/{id}/withdraw")
     public ResponseEntity<Void> withdraw(@PathVariable Long id) {
         customerService.withdraw(id);
         return ResponseEntity.noContent().build();
