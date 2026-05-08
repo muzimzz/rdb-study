@@ -20,6 +20,7 @@ public class CustomerRequest {
                 .email(this.email)
                 .password(this.password)
                 .address(this.address)
+                .status("ACTIVE")
                 .build();
     }
 

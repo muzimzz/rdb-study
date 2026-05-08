@@ -49,10 +49,15 @@ public class CustomerService {
         customerRepository.updatePassword(id, newPassword);
     }
 
-    public void deleteById(Long id) {
-        if (!customerRepository.existsById(id))
-            throw new IllegalArgumentException("존재하지 않는 사용자");
-        else customerRepository.deleteById(id);
+    public void withdraw(Long id) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(" 존재하지 않는 사용자"));
+
+        if (customer.getStatus().equals("WITHDRAW")) {
+            throw new IllegalArgumentException("이미 탈퇴한 사용자");
+        }
+
+        else customerRepository.updateStatus(id, "WITHDRAW");
     }
 
 

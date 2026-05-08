@@ -22,6 +22,18 @@ public class CustomerController {
                 .created(URI.create("/customers/" + response.getCustomerId()))
                 .body(response);
     }
+ /*
+    # 일반 사용자용
+    GET    /customers/me           - 내 정보 조회
+    PUT    /customers/me           - 내 정보 수정
+    PATCH  /customers/me/password  - 비밀번호 변경
+    PATCH  /customers/me/deactivate - 회원 탈퇴 (status 변경)
+
+    # 관리자용
+    GET    /customers              - 전체 조회
+    GET    /customers/{id}         - 특정 회원 조회
+    DELETE /customers/{id}         - 물리 삭제 (극히 예외적)
+*/
 
     @GetMapping("/{id}")
     public ResponseEntity<CustomerResponse> findById(@PathVariable Long id) {
@@ -29,6 +41,7 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
+    // 관리자용
     @GetMapping
     public ResponseEntity<List<CustomerResponse>> findAll() {
         return ResponseEntity.ok(customerService.findAll());
@@ -47,9 +60,9 @@ public class CustomerController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        customerService.deleteById(id);
+    @PatchMapping("/{id}")
+    public ResponseEntity<Void> withdraw(@PathVariable Long id) {
+        customerService.withdraw(id);
         return ResponseEntity.noContent().build();
     }
 }

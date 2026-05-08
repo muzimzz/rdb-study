@@ -12,15 +12,17 @@ public class Customer {
     private String email;
     private String password;
     private String address;
+    private String status;
     private LocalDateTime joinDate;
 
     @Builder
-    public Customer(Long customerId, String name, String email, String password, String address, LocalDateTime joinDate) {
+    public Customer(Long customerId, String name, String email, String password, String address, String status, LocalDateTime joinDate) {
         this.customerId = customerId;
         this.name = name;
         this.email = email;
         this.password = password;
         this.address = address;
+        this.status = status;
         this.joinDate = joinDate;
     }
 }
