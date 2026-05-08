@@ -53,11 +53,11 @@ public class CustomerService {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(" 존재하지 않는 사용자"));
 
-        if (customer.getStatus().equals("WITHDRAW")) {
+        if (customer.getStatus().equals("INACTIVE")) {
             throw new IllegalArgumentException("이미 탈퇴한 사용자");
         }
 
-        else customerRepository.updateStatus(id, "WITHDRAW");
+        else customerRepository.updateStatus(id, "INACTIVE");
     }
 
 
