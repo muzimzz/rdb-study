@@ -15,6 +15,7 @@ public class ProductController {
 
     private final ProductService productService;
 
+    // 관리자용
     @PostMapping
     public ResponseEntity<ProductResponse> save(@RequestBody ProductRequest request) {
         ProductResponse response = productService.save(request);
@@ -39,10 +40,11 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductResponse>> findAll () {
+    public ResponseEntity<List<ProductResponse>> findAll() {
         return ResponseEntity.ok(productService.findAll());
     }
 
+    // 관리자용
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable Long id,
                        @RequestBody ProductRequest request) {
@@ -51,6 +53,7 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
+    // 관리자용
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         productService.deleteById(id);
