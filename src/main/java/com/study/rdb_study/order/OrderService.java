@@ -99,6 +99,7 @@ public class OrderService {
         for (OrderItem orderItem : orderItems) {
             productRepository.increaseStock(orderItem.getProductId(), orderItem.getQuantity());
         }
+        orderItemRepository.deleteByOrderId(id); // 또는 ON DELETE CASCADE (FK제약 위반 방지)
         orderRepository.deleteById(id);
     }
 
