@@ -41,4 +41,8 @@ public class CartRepository {
         return result.stream().findFirst();
     }
 
+    public void deleteByCustomerId(Long customerId) {
+        String sql = "delete from carts where customer_id=?";
+        jdbcTemplate.update(sql, customerId);
+    }
 }

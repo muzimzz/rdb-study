@@ -64,6 +64,7 @@ public class CustomerService {
             throw new IllegalArgumentException("이미 탈퇴한 사용자");
         }
 
+        cartRepository.deleteByCustomerId(id);
         customerRepository.updateStatus(id, "INACTIVE");
     }
 
