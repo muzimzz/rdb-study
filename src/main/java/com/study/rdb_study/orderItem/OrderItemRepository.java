@@ -64,16 +64,4 @@ public class OrderItemRepository {
         String sql = "select order_id, product_id, quantity from order_items where order_id=?";
         return jdbcTemplate.query(sql, orderItemRowMapper, orderId);
     }
-
-    // 전체 취소
-    public void deleteByOrderId(Long orderId) {
-        String sql = "delete from order_items where order_id=?";
-        jdbcTemplate.update(sql, orderId);
-    }
-
-    // 부분 취소: 요구사항에 따라 추가 검토
-    public void deleteByOrderIdAndProductId(Long orderId, Long productId) {
-        String sql = "delete from order_items where order_id=? and product_id=?";
-        jdbcTemplate.update(sql, orderId, productId);
-    }
 }
