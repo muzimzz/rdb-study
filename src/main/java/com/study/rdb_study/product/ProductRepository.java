@@ -53,7 +53,7 @@ public class ProductRepository {
     }
 
     public List<Product> findAll() {
-        String sql = "select product_id, name, price, stock_quantity, description, status from products and status='ACTIVE'";
+        String sql = "select product_id, name, price, stock_quantity, description, status from products where status='ACTIVE'";
 
         return jdbcTemplate.query(sql, productRowMapper);
     }
@@ -74,7 +74,7 @@ public class ProductRepository {
 
     // 관리자용 (soft delete)
     public void updateStatus(Long id, String status) {
-        String sql = "update products set status='?' where product_id=?";
+        String sql = "update products set status=? where product_id=?";
         jdbcTemplate.update(sql, status, id);
     }
 
