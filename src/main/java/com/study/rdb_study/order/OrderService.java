@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,7 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
 
-    public OrderResponse save(OrderCreateRequest orderCreateRequest) {
+    public OrderDetailResponse save(OrderCreateRequest orderCreateRequest) {
 
         // 이 id검증 로직이 없어도 아래의 productRepository.decreaseStock()에서 재고가 음수가 될 경우
         // Transaction으로 롤백되지만, 불필요한 insert query로 인한 성능 저하를 막는다.
@@ -49,12 +50,14 @@ public class OrderService {
         // decreaseStock()은 DB 레벨에서도 stock_quantity >= quantity 조건을 걸어둠
         // → 1단계와 3단계 사이에 동시 요청이 끼어들어도 음수 재고 방지
         // → decreaseStock()이 예외를 던지면 @Transactional이 전체(주문 포함) 롤백
+        List<OrderItemResponse> orderItems = new ArrayList<>();
         for (OrderItemRequest itemRequest : orderCreateRequest.getItems()) {
-            orderItemRepository.save(itemRequest.toEntity(order.getOrderId()));
+            OrderItem savedItem = orderItemRepository.save(itemRequest.toEntity(order.getOrderId()));
+            orderItems.add(OrderItemResponse.toDto(savedItem));
             productRepository.decreaseStock(itemRequest.getProductId(), itemRequest.getQuantity());
         }
 
-        return OrderResponse.toDto(order);
+        return OrderDetailResponse.toDto(order, orderItems);
     }
 
     @Transactional(readOnly = true)
@@ -90,12 +93,12 @@ public class OrderService {
     }
 
     // 관리자용
-    public void update(Long id, OrderCreateRequest orderCreateRequest) {
-        if (!orderRepository.existsById(id))
-            throw new IllegalArgumentException("존재하지 않는 주문");
-
-        // orderRepository.update(orderUpdateRequest.toEntity(id));
-    }
+//    public void update(Long id, OrderCreateRequest orderCreateRequest) {
+//        if (!orderRepository.existsById(id))
+//            throw new IllegalArgumentException("존재하지 않는 주문");
+//
+//        // orderRepository.update(orderUpdateRequest.toEntity(id));
+//    }
 
     public void cancelOrder(Long id) {
         Order order = orderRepository.findById(id)
