@@ -13,6 +13,7 @@ public class ProductResponse {
     private int price;
     private int stockQuantity;
     private String description;
+    private String status;
 
     public static ProductResponse toDto(Product product) {
         return ProductResponse.builder()
@@ -21,6 +22,7 @@ public class ProductResponse {
                 .price(product.getPrice())
                 .stockQuantity(product.getStockQuantity())
                 .description(product.getDescription())
+                .status(product.getStatus())
                 .build();
     }
 }

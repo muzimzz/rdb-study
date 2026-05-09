@@ -22,6 +22,7 @@ public class ProductRepository {
             .price(rs.getInt("price"))
             .stockQuantity(rs.getInt("stock_quantity"))
             .description(rs.getString("description"))
+            .status(rs.getString("status"))
             .build();
 
     // 관리자용
@@ -43,15 +44,16 @@ public class ProductRepository {
                 .orElseThrow(() -> new IllegalArgumentException("상품 조회 실패"));
     }
 
+    // status가 추가됨에 따라 관리자용 상품 조회(INACTIVE 포함)는 다르게 만들 것
     public Optional<Product> findById(Long id) {
-        String sql = "select product_id, name, price, stock_quantity, description from products where product_id = ?";
+        String sql = "select product_id, name, price, stock_quantity, description, status from products where product_id = ? and status='ACTIVE'";
 
         List<Product> result = jdbcTemplate.query(sql, productRowMapper, id);
         return result.stream().findFirst();
     }
 
     public List<Product> findAll() {
-        String sql = "select product_id, name, price, stock_quantity, description from products";
+        String sql = "select product_id, name, price, stock_quantity, description, status from products and status='ACTIVE'";
 
         return jdbcTemplate.query(sql, productRowMapper);
     }
@@ -70,8 +72,14 @@ public class ProductRepository {
         jdbcTemplate.update(sql, id);
     }
 
+    // 관리자용 (soft delete)
+    public void updateStatus(Long id, String status) {
+        String sql = "update products set status='?' where product_id=?";
+        jdbcTemplate.update(sql, status, id);
+    }
+
     public boolean existsById(Long id) {
-        String sql = "select count(*) from products where product_id=?";
+        String sql = "select count(*) from products where product_id=? and status='ACTIVE'";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
 
         return count != null && count > 0;

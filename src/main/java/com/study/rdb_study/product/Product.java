@@ -10,13 +10,15 @@ public class Product {
     private int price;
     private int stockQuantity;
     private String description;
+    private String status;
 
     @Builder
-    public Product(Long productId, String name, int price, int stockQuantity, String description) {
+    public Product(Long productId, String name, int price, int stockQuantity, String description, String status) {
         this.productId = productId;
         this.name = name;
         this.price = price;
         this.stockQuantity = stockQuantity;
         this.description = description;
+        this.status = status;
     }
 }
