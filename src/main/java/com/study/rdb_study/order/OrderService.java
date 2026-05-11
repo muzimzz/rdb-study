@@ -40,6 +40,9 @@ public class OrderService {
                     .orElseThrow(() -> new IllegalArgumentException(
                             "존재하지 않는 상품 ID: " + itemRequest.getProductId()));
 
+            if (itemRequest.getQuantity() <= 0)
+                throw new IllegalArgumentException("주문 수량은 1 이상이어야 합니다.");
+
             if (product.getStockQuantity() < itemRequest.getQuantity())
                 throw new IllegalArgumentException(
                         "재고 부족 - 상품명: " + product.getName()
