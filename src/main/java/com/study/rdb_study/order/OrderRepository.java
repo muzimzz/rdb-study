@@ -23,6 +23,7 @@ public class OrderRepository {
             .status(rs.getString("status"))
             .build();
 
+    // 주문 생성
     public Order save(Order order) {
         String sql = "insert into orders (customer_id, status) values (?, ?)";
 
@@ -38,6 +39,7 @@ public class OrderRepository {
                 .orElseThrow(() -> new IllegalArgumentException("주문 조회 실패"));
     }
 
+    // 주문 단건 조회, 주문 취소 시 검증
     public Optional<Order> findById(Long id) {
         String sql = "select order_id, customer_id, order_date, status from orders where order_id=?";
 
@@ -46,6 +48,7 @@ public class OrderRepository {
                 .findFirst();
     }
 
+    // 내 주문 목록
     public List<Order> findByCustomerId(Long id) {
         String sql = "select order_id, customer_id, order_date, status from orders where customer_id=?";
 
@@ -73,6 +76,7 @@ public class OrderRepository {
         jdbcTemplate.update(sql, id);
     }
 
+    // 주문 정보 강제 수정 시 검증(관리자용)
     public boolean existsById(Long id) {
         String sql = "select count(*) from orders where order_id=?";
 
@@ -81,6 +85,7 @@ public class OrderRepository {
         return count != null && count > 0;
     }
 
+    // 주문 취소(CANCELLED)
     public void updateStatus(Long id, String status) {
         String sql = "update orders set status=? where order_id=?";
         jdbcTemplate.update(sql, status, id);
