@@ -19,6 +19,7 @@ public class OrderItemRepository {
             .quantity(rs.getInt("quantity"))
             .build();
 
+    // 주문 아이템 저장(내부용)
     public OrderItem save(OrderItem orderItem) {
         // duplicate key 문법을 이용해 save+increase 합치기 가능
 //      String sql = "INSERT INTO order_items (order_id, product_id, quantity)"
@@ -30,13 +31,7 @@ public class OrderItemRepository {
                 .orElseThrow(() -> new IllegalArgumentException("저장된 데이터 조회 실패"));
     }
 
-//    OrderItem대신에 CartItem에 구현
-//    public void increaseQuantity (Long orderId, Long productId, int addQuantity) {
-//        String sql = "update order_items set quantity=quantity+? where order_id=? and product_id=?";
-//        jdbcTemplate.update(sql, addQuantity, orderId, productId);
-//    }
-
-    // 주문 아이템 1개만 반환
+    // 주문 아이템 1개만 반환, save() 후 반환, 취소 시 재고 복구용
     public Optional<OrderItem> findByOrderIdAndProductId(Long orderId, Long productId) {
         String sql = "select order_id, product_id, quantity from order_items where order_id=? and product_id=?";
 //        try {
@@ -59,7 +54,7 @@ public class OrderItemRepository {
 
     }
 
-    // findAll()은 모든 주문을 조회하기 때문에 서비스 상 필요x
+    // 주문 상세 조회
     public List<OrderItem> findByOrderId(Long orderId) {
         String sql = "select order_id, product_id, quantity from order_items where order_id=?";
         return jdbcTemplate.query(sql, orderItemRowMapper, orderId);
