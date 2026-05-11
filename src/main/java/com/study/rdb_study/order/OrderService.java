@@ -1,5 +1,6 @@
 package com.study.rdb_study.order;
 
+import com.study.rdb_study.customer.CustomerRepository;
 import com.study.rdb_study.order.dto.OrderDetailResponse;
 import com.study.rdb_study.order.dto.OrderCreateRequest;
 import com.study.rdb_study.order.dto.OrderResponse;
@@ -25,8 +26,11 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
+    private final CustomerRepository customerRepository;
 
     public OrderDetailResponse save(OrderCreateRequest orderCreateRequest) {
+        customerRepository.findById(orderCreateRequest.getCustomerId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 고객"));
 
         // 이 id검증 로직이 없어도 아래의 productRepository.decreaseStock()에서 재고가 음수가 될 경우
         // Transaction으로 롤백되지만, 불필요한 insert query로 인한 성능 저하를 막는다.
