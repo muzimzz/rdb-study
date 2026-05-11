@@ -68,4 +68,10 @@ public class CartItemRepository {
         String sql = "delete from cart_items where cart_item_id=?";
         jdbcTemplate.update(sql, id);
     }
+
+    // Todo
+    public Optional<CartItem> findByCartIdAndProductId() {
+        // save: upsert 구현 시 필요
+        return null;
+    }
 }
