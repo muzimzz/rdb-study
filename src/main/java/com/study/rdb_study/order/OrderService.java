@@ -1,5 +1,9 @@
 package com.study.rdb_study.order;
 
+import com.study.rdb_study.cart.Cart;
+import com.study.rdb_study.cart.CartRepository;
+import com.study.rdb_study.cartItem.CartItem;
+import com.study.rdb_study.cartItem.CartItemRepository;
 import com.study.rdb_study.customer.CustomerRepository;
 import com.study.rdb_study.order.dto.OrderDetailResponse;
 import com.study.rdb_study.order.dto.OrderCreateRequest;
@@ -27,42 +31,57 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
+    private final CartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
 
+    // 주문정보 저장, 주문상세 반환, order_items에 save, 장바구니 제거, 재고 차감
     public OrderDetailResponse save(OrderCreateRequest orderCreateRequest) {
+        // 고객 존재 여부 검증
         customerRepository.findById(orderCreateRequest.getCustomerId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 고객"));
 
-        // 이 id검증 로직이 없어도 아래의 productRepository.decreaseStock()에서 재고가 음수가 될 경우
-        // Transaction으로 롤백되지만, 불필요한 insert query로 인한 성능 저하를 막는다.
-        // (없으면 insert, insert, insert, 재고검증 시 롤백 -> 불필요한 insert)
-        for (OrderItemRequest itemRequest : orderCreateRequest.getItems()) {
-            Product product = productRepository.findById(itemRequest.getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "존재하지 않는 상품 ID: " + itemRequest.getProductId()));
+        // 장바구니 존재 여부 겁증
+        Cart cart = cartRepository.findByCustomerId(orderCreateRequest.getCustomerId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 장바구니"));
 
-            if (itemRequest.getQuantity() <= 0)
-                throw new IllegalArgumentException("주문 수량은 1 이상이어야 합니다.");
-
-            if (product.getStockQuantity() < itemRequest.getQuantity())
-                throw new IllegalArgumentException(
-                        "재고 부족 - 상품명: " + product.getName()
-                        + " (요청: " + itemRequest.getQuantity()
-                        + ", 재고: " + product.getStockQuantity() + ")");
+        // 장바구니 비어있는지 검증
+        List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getCartId());
+        if (cartItems.isEmpty()) {
+            throw new IllegalArgumentException("빈 장바구니");
         }
 
-        // [2단계] 주문 저장
+        // 장바구니 각 아이템 존재 여부, 주문 개수 여부, 재고 부족 검증
+        for (CartItem cartItem : cartItems) {
+            Product product = productRepository.findById(cartItem.getProductId())
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품ID: " + cartItem.getProductId()));
+
+            if (cartItem.getQuantity() <= 0) {
+                throw new IllegalArgumentException("주문 개수는 1 이상이어야 합니다.");
+            }
+
+            if (cartItem.getQuantity() > product.getStockQuantity()) {
+                throw new IllegalArgumentException("-----재고 부족-----\n상품명: " + product.getName());
+            }
+        }
+
+        // 주문 저장
         Order order = orderRepository.save(orderCreateRequest.toEntity());
 
-        // [3단계] 주문 아이템 저장 + 재고 차감
-        // decreaseStock()은 DB 레벨에서도 stock_quantity >= quantity 조건을 걸어둠
-        // → 1단계와 3단계 사이에 동시 요청이 끼어들어도 음수 재고 방지
-        // → decreaseStock()이 예외를 던지면 @Transactional이 전체(주문 포함) 롤백
+        // 주문 아이템 저장 + 응답(반환)용 dto 생성 + 재고 차감
         List<OrderItemResponse> orderItems = new ArrayList<>();
-        for (OrderItemRequest itemRequest : orderCreateRequest.getItems()) {
-            OrderItem savedItem = orderItemRepository.save(itemRequest.toEntity(order.getOrderId()));
+        for (CartItem cartItem : cartItems) {
+            OrderItem item = OrderItem.builder()
+                    .orderId(order.getOrderId())
+                    .productId(cartItem.getProductId())
+                    .quantity(cartItem.getQuantity())
+                    .build();
+            OrderItem savedItem = orderItemRepository.save(item);
             orderItems.add(OrderItemResponse.toDto(savedItem));
-            productRepository.decreaseStock(itemRequest.getProductId(), itemRequest.getQuantity());
+
+            productRepository.decreaseStock(cartItem.getProductId(), cartItem.getQuantity());
         }
+
+        cartItemRepository.deleteAllByCartId(cart.getCartId());
 
         return OrderDetailResponse.toDto(order, orderItems);
     }

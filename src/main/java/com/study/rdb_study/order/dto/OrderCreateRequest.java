@@ -12,7 +12,6 @@ import java.util.List;
 public class OrderCreateRequest {
     private Long customerId;
     // private String status; --관리자용
-    private List<OrderItemRequest> items;
 
     public Order toEntity() {
         return Order.builder()
