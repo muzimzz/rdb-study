@@ -25,6 +25,7 @@ public class CustomerRepository {
             .joinDate(rs.getTimestamp("join_date").toLocalDateTime())
             .build();
 
+    // 회원가입
     public Customer save(Customer customer) {
         String sql = "insert into customers (name, email, password, address, status) values (?, ?, ?, ?, ?)";
 
@@ -43,6 +44,7 @@ public class CustomerRepository {
                 .orElseThrow(() -> new IllegalArgumentException("고객 조회 실패"));
     }
 
+    // 회원 조회
     public Optional<Customer> findById(Long id) {
         String sql = "select customer_id, name, email, address, status, join_date from customers where customer_id=?";
 
@@ -50,6 +52,7 @@ public class CustomerRepository {
         return result.stream().findFirst();
     }
 
+    // 현재 비밀번호 검증(관리자용?)
     public Optional<String> findPasswordById(Long id) {
         String sql = "select password from customers where customer_id=?";
 
@@ -60,30 +63,35 @@ public class CustomerRepository {
         return result.stream().findFirst();
     }
 
+    // 관리자용
     public List<Customer> findAll() {
         String sql = "select customer_id, name, email, address, status, join_date from customers";
 
         return jdbcTemplate.query(sql, customerRowMapper);
     }
 
+    // 회원정보 수정
     public void update(Customer customer) {
         String sql = "update customers set email=?, address=? where customer_id=?";
 
         jdbcTemplate.update(sql, customer.getEmail(), customer.getAddress(), customer.getCustomerId());
     }
 
+    // 비밀번호 변경
     public void updatePassword(Long id, String newPassword) {
         String sql = "update customers set password=? where customer_id=?";
 
         jdbcTemplate.update(sql, newPassword, id);
     }
 
+    // 회원탈퇴 (INACTIVE)
     public void updateStatus(Long id, String status) {
         String sql = "update customers set status=? where customer_id=?";
 
         jdbcTemplate.update(sql, status, id);
     }
 
+    // update 시 회원 존재 검증
     public boolean existsById(Long id) {
         String sql = "select count(*) from customers where customer_id=?";
 
