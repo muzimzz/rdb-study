@@ -25,7 +25,7 @@ public class ProductRepository {
             .status(rs.getString("status"))
             .build();
 
-    // 관리자용
+    // 상품 등록(관리자용)
     public Product save(Product product) {
         String sql = "insert into products (name, price, stock_quantity, description) values (?, ?, ?, ?)";
 
@@ -44,7 +44,7 @@ public class ProductRepository {
                 .orElseThrow(() -> new IllegalArgumentException("상품 조회 실패"));
     }
 
-    // status가 추가됨에 따라 관리자용 상품 조회(INACTIVE 포함)는 다르게 만들 것
+    // 상품 조회
     public Optional<Product> findById(Long id) {
         String sql = "select product_id, name, price, stock_quantity, description, status from products where product_id = ? and status='ACTIVE'";
 
@@ -52,32 +52,42 @@ public class ProductRepository {
         return result.stream().findFirst();
     }
 
+    // 상품 조회(관리자용, 비활성화 상품 포함)
+    public Optional<Product> findAllById(Long id) {
+        String sql = "select product_id, name, price, stock_quantity, description, status from products where product_id = ?";
+
+        List<Product> result = jdbcTemplate.query(sql, productRowMapper, id);
+        return result.stream().findFirst();
+    }
+
+    // 상품 목록
     public List<Product> findAll() {
         String sql = "select product_id, name, price, stock_quantity, description, status from products where status='ACTIVE'";
 
         return jdbcTemplate.query(sql, productRowMapper);
     }
 
-    // 관리자용
+    // 상품 수정(관리자용)
     public void update(Product product) {
         String sql = "update products set name=?, price=?, stock_quantity=?, description=? where product_id=?";
 
         jdbcTemplate.update(sql, product.getName(), product.getPrice(), product.getStockQuantity(), product.getDescription(), product.getProductId());
     }
 
-    // 관리자용
+    // 상품data 물리적 삭제 (관리자용, 예외적)
     public void deleteById(Long id) {
         String sql = "delete from products where product_id=?";
 
         jdbcTemplate.update(sql, id);
     }
 
-    // 관리자용 (soft delete)
+    // 상품 비활성화(관리자용, soft delete)
     public void updateStatus(Long id, String status) {
         String sql = "update products set status=? where product_id=?";
         jdbcTemplate.update(sql, status, id);
     }
 
+    // 재고/주문 검증용
     public boolean existsById(Long id) {
         String sql = "select count(*) from products where product_id=? and status='ACTIVE'";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
@@ -85,6 +95,7 @@ public class ProductRepository {
         return count != null && count > 0;
     }
 
+    // 주문 시 재고 차감(내부용)
     public void decreaseStock(Long productId, int quantity) {
         // product.save() 시점의 quantity는 업데이트 되지 않기 때문에 DB레벨에서 stock_quantity를 검사한다
         String sql = "update products set stock_quantity = stock_quantity - ? " +
@@ -96,6 +107,7 @@ public class ProductRepository {
             throw new IllegalArgumentException("재고가 부족합니다.");
     }
 
+    // 주문 취소 시 재고 복구(내부용)
     public void increaseStock(Long productId, int quantity) {
         String sql = "update products set stock_quantity = stock_quantity + ? where product_id = ?";
         jdbcTemplate.update(sql, quantity, productId);
