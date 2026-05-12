@@ -10,7 +10,6 @@ import com.study.rdb_study.order.dto.OrderCreateRequest;
 import com.study.rdb_study.order.dto.OrderResponse;
 import com.study.rdb_study.orderItem.OrderItem;
 import com.study.rdb_study.orderItem.OrderItemRepository;
-import com.study.rdb_study.orderItem.OrderItemRequest;
 import com.study.rdb_study.orderItem.OrderItemResponse;
 import com.study.rdb_study.product.Product;
 import com.study.rdb_study.product.ProductRepository;

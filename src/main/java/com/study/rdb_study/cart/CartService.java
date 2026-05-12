@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,10 +21,7 @@ public class CartService {
         Cart cart = cartRepository.findByCustomerId(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("장바구니가 존재하지 않음"));
 
-        List<CartItemResponse> cartItems = cartItemRepository.findByCartId(cart.getCartId())
-                .stream()
-                .map(CartItemResponse::toDto)
-                .collect(Collectors.toList());
+        List<CartItemResponse> cartItems = cartItemRepository.findCartItemsByCartId(cart.getCartId());
 
         return CartResponse.toDto(cart, cartItems);
     }

@@ -13,10 +13,9 @@ public class CartItemController {
     private final CartItemService cartItemService;
 
     @PostMapping
-    public ResponseEntity<CartItemResponse> addItem(@RequestBody CartItemRequest request) {
-        CartItemResponse response = cartItemService.addItem(request);
-        return ResponseEntity.created(URI.create("/cart-items/" + response.getCartItemId()))
-                .body(response);
+    public ResponseEntity<Void> addItem(@RequestBody CartItemRequest request) {
+        cartItemService.addItem(request);
+        return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/{id}")

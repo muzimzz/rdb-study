@@ -6,19 +6,19 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-@Builder
 public class CartItemResponse {
     private Long cartItemId;
-    private Long cartId;
-    private Long productId;
+    private String productName;
+    private int price;
     private int quantity;
+    private int totalPrice;
 
-    public static CartItemResponse toDto(CartItem cartItem) {
-        return CartItemResponse.builder()
-                .cartItemId(cartItem.getCartItemId())
-                .cartId(cartItem.getCartId())
-                .productId(cartItem.getProductId())
-                .quantity(cartItem.getQuantity())
-                .build();
+    @Builder
+    public CartItemResponse(Long cartItemId, String productName, int price, int quantity) {
+        this.cartItemId = cartItemId;
+        this.productName = productName;
+        this.price = price;
+        this.quantity = quantity;
+        this.totalPrice = price * quantity;
     }
 }

@@ -14,8 +14,8 @@ public class CartItemService {
     // public List<CartItemResponse> findByCartId(Long customerId) { }
 
     // 장바구니에 상품 추가
-    public CartItemResponse addItem(CartItemRequest request) {
-        return CartItemResponse.toDto(cartItemRepository.save(request.toEntity()));
+    public void addItem(CartItemRequest request) {
+        cartItemRepository.save(request.toEntity());
     }
 
     // 장바구니 수량 변경

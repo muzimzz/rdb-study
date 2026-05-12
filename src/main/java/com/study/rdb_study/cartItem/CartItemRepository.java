@@ -16,12 +16,31 @@ import java.util.Optional;
 public class CartItemRepository {
 
     private final JdbcTemplate jdbcTemplate;
+
     private final RowMapper<CartItem> cartItemRowMapper = (rs, rowNum) -> CartItem.builder()
             .cartItemId(rs.getLong("cart_item_id"))
             .cartId(rs.getLong("cart_id"))
             .productId(rs.getLong("product_id"))
             .quantity(rs.getInt("quantity"))
             .build();
+
+    private final RowMapper<CartItemResponse> cartItemResponseRowMapper = (rs, rowNum) -> CartItemResponse.builder()
+            .cartItemId(rs.getLong("cart_item_id"))
+            .productName(rs.getString("name"))
+            .price(rs.getInt("price"))
+            .quantity(rs.getInt("quantity"))
+            .build();
+
+    public List<CartItemResponse> findCartItemsByCartId(Long cartId) {
+        String sql = """
+        select ci.cart_item_id, p.name, p.price, ci.quantity 
+        from cart_items ci 
+        join products p on ci.product_id = p.product_id 
+        where ci.cart_id=?
+        """;
+
+        return jdbcTemplate.query(sql, cartItemResponseRowMapper, cartId);
+    }
 
     public List<CartItem> findByCartId(Long cartId) {
         String sql = "select cart_item_id, cart_id, product_id, quantity from cart_items where cart_id=?";
