@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
 public class CartItemResponse {
     private Long cartItemId;
     private String productName;

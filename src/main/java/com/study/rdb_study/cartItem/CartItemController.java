@@ -1,6 +1,8 @@
 package com.study.rdb_study.cartItem;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +17,7 @@ public class CartItemController {
     @PostMapping
     public ResponseEntity<Void> addItem(@RequestBody CartItemRequest request) {
         cartItemService.addItem(request);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PatchMapping("/{id}")
