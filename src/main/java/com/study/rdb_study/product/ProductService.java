@@ -38,11 +38,11 @@ public class ProductService {
         productRepository.update(request.toEntityWithId(id));
     }
 
-    public void deleteById(Long id) {
+    public void updateStatus(Long id, String status) {
 
         if (!productRepository.existsById(id))
             throw new IllegalArgumentException("존재하지 않는 상품");
 
-        productRepository.deleteById(id);
+        productRepository.updateStatus(id, status);
     }
 }

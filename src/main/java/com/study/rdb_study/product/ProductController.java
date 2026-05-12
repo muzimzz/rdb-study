@@ -55,8 +55,8 @@ public class ProductController {
 
     // 관리자용
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
-        productService.deleteById(id);
+    public ResponseEntity<Void> updateStatus(@PathVariable Long id) {
+        productService.updateStatus(id, "INACTIVE");
 
         return ResponseEntity.noContent().build();
 
