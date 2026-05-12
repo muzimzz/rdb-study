@@ -33,11 +33,11 @@ public class CartItemRepository {
 
     public List<CartItemResponse> findCartItemsByCartId(Long cartId) {
         String sql = """
-        select ci.cart_item_id, p.name, p.price, ci.quantity 
-        from cart_items ci 
-        join products p on ci.product_id = p.product_id 
-        where ci.cart_id=?
-        """;
+            select ci.cart_item_id, p.name, p.price, ci.quantity 
+            from cart_items ci 
+            join products p on ci.product_id = p.product_id 
+            where ci.cart_id=?
+            """;
 
         return jdbcTemplate.query(sql, cartItemResponseRowMapper, cartId);
     }

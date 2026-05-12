@@ -5,18 +5,17 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
-@Builder
 public class OrderItemResponse {
-    private Long orderId;
-    private Long productId;
+    private String productName;
+    private int price;
     private int quantity;
+    private int totalPrice;
 
-    public static OrderItemResponse toDto(OrderItem orderItem) {
-        return OrderItemResponse.builder()
-                .orderId(orderItem.getOrderId())
-                .productId(orderItem.getProductId())
-                .quantity(orderItem.getQuantity())
-                .build();
+    @Builder
+    public OrderItemResponse(String productName, int price, int quantity) {
+        this.productName = productName;
+        this.price = price;
+        this.quantity = quantity;
+        this.totalPrice = price * quantity;
     }
 }

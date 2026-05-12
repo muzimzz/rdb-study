@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -67,21 +66,20 @@ public class OrderService {
         Order order = orderRepository.save(orderCreateRequest.toEntity());
 
         // 주문 아이템 저장 + 응답(반환)용 dto 생성 + 재고 차감
-        List<OrderItemResponse> orderItems = new ArrayList<>();
         for (CartItem cartItem : cartItems) {
             OrderItem item = OrderItem.builder()
                     .orderId(order.getOrderId())
                     .productId(cartItem.getProductId())
                     .quantity(cartItem.getQuantity())
                     .build();
-            OrderItem savedItem = orderItemRepository.save(item);
-            orderItems.add(OrderItemResponse.toDto(savedItem));
 
+            orderItemRepository.save(item);
             productRepository.decreaseStock(cartItem.getProductId(), cartItem.getQuantity());
         }
 
         cartItemRepository.deleteAllByCartId(cart.getCartId());
 
+        List<OrderItemResponse> orderItems = orderItemRepository.findOrderItemsByOrderId(order.getOrderId());
         return OrderDetailResponse.toDto(order, orderItems);
     }
 
@@ -95,10 +93,8 @@ public class OrderService {
             throw new IllegalArgumentException("본인 주문만 조회 가능");
         }
 
-        List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
-        return OrderDetailResponse.toDto(order, orderItems.stream()
-                .map(OrderItemResponse::toDto)
-                .collect(Collectors.toList()));
+        List<OrderItemResponse> orderItems = orderItemRepository.findOrderItemsByOrderId(orderId);
+        return OrderDetailResponse.toDto(order, orderItems);
     }
 
     @Transactional(readOnly = true)
