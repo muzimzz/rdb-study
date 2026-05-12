@@ -10,14 +10,25 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
-@AllArgsConstructor
-@Builder
 public class OrderDetailResponse {
     private Long orderId;
     private Long customerId;
     private LocalDateTime orderDate;
     private String status;
     private List<OrderItemResponse> orderItems;
+    private int totalPrice;
+
+    @Builder
+    public OrderDetailResponse(Long orderId, Long customerId, LocalDateTime orderDate, String status, List<OrderItemResponse> orderItems) {
+        this.orderId = orderId;
+        this.customerId = customerId;
+        this.orderDate = orderDate;
+        this.status = status;
+        this.orderItems = orderItems;
+        this.totalPrice = orderItems.stream()
+                .mapToInt(OrderItemResponse::getTotalPrice)
+                .sum();
+    }
 
     public static OrderDetailResponse toDto(Order order, List<OrderItemResponse> orderItems) {
         return OrderDetailResponse.builder()
