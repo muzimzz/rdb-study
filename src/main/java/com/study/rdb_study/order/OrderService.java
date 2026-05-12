@@ -100,8 +100,13 @@ public class OrderService {
     @Transactional(readOnly = true)
     public List<OrderResponse> findByCustomerId(Long customerId) {
 
-        return orderRepository.findByCustomerId(customerId).stream()
-                .map(OrderResponse::toDto)
+        List<Order> orders = orderRepository.findByCustomerId(customerId);
+
+        return orders.stream()
+                .map(order -> {
+                    List<OrderItemResponse> items = orderItemRepository.findOrderItemsByOrderId(order.getOrderId());
+                    return OrderResponse.toDto(order, items);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -109,7 +114,10 @@ public class OrderService {
     @Transactional(readOnly = true)
     public List<OrderResponse> findAll() {
         return orderRepository.findAll().stream()
-                .map(OrderResponse::toDto)
+                .map(order -> {
+                    List<OrderItemResponse> items = orderItemRepository.findOrderItemsByOrderId(order.getOrderId());
+                    return OrderResponse.toDto(order, items);
+                })
                 .collect(Collectors.toList());
     }
 
