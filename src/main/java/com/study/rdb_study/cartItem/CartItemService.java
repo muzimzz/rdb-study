@@ -1,5 +1,7 @@
 package com.study.rdb_study.cartItem;
 
+import com.study.rdb_study.cart.Cart;
+import com.study.rdb_study.cart.CartRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,13 +11,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class CartItemService {
     private final CartItemRepository cartItemRepository;
+    private final CartRepository cartRepository;
 
     // 장바구니 조회는 Cart에서 하는 것이 적절
     // public List<CartItemResponse> findByCartId(Long customerId) { }
 
     // 장바구니에 상품 추가
     public void addItem(CartItemRequest request) {
-        cartItemRepository.save(request.toEntity());
+        Cart cart = cartRepository.findByCustomerId(request.getCustomerId())
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원"));
+        cartItemRepository.save(request.toEntity(cart.getCartId()));
     }
 
     // 장바구니 수량 변경

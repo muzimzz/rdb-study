@@ -6,13 +6,13 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class CartItemRequest {
-    private Long cartId;
+    private Long customerId;
     private Long productId;
     private int quantity;
 
-    public CartItem toEntity() {
+    public CartItem toEntity(Long cartId) {
         return CartItem.builder()
-                .cartId(this.cartId)
+                .cartId(cartId)
                 .productId(this.productId)
                 .quantity(this.quantity)
                 .build();
