@@ -1,4 +1,6 @@
 HELP.md
+CLAUDE.md
+join-and-n-plus-1.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
