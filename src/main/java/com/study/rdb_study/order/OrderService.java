@@ -139,6 +139,10 @@ public class OrderService {
             throw new IllegalArgumentException("이미 취소된 주문, orderId: " + id);
         }
 
+        if (order.getStatus().equals("SHIPPED") || order.getStatus().equals("DELIVERED")) {
+            throw new IllegalArgumentException("배송 중이거나 배송 완료된 주문은 취소할 수 없습니다.");
+        }
+
         List<OrderItem> orderItems = orderItemRepository.findByOrderId(id);
         for (OrderItem orderItem : orderItems) {
             productRepository.increaseStock(orderItem.getProductId(), orderItem.getQuantity());
