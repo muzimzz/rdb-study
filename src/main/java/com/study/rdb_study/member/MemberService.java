@@ -28,7 +28,7 @@ public class MemberService {
     @Transactional(readOnly = true)
     public MemberResponse findById(Long id) {
         return MemberResponse.toDto(memberRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("고객 조회 실패")));
+                .orElseThrow(() -> new IllegalArgumentException("회원 조회 실패")));
     }
 
     @Transactional(readOnly = true)
