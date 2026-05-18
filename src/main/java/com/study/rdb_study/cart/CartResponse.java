@@ -12,13 +12,13 @@ import java.util.List;
 @Builder
 public class CartResponse {
     private Long cartId;
-    private Long customerId;
+    private Long memberId;
     private List<CartItemResponse> cartItems;
 
     public static CartResponse toDto (Cart cart, List<CartItemResponse> cartItems) {
         return CartResponse.builder()
                 .cartId(cart.getCartId())
-                .customerId(cart.getCustomerId())
+                .memberId(cart.getMemberId())
                 .cartItems(cartItems)
                 .build();
     }

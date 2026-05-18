@@ -27,14 +27,14 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<List<OrderResponse>> findByCustomerId(@RequestParam Long customerId) {
-        List<OrderResponse> response = orderService.findByCustomerId(customerId);
+    public ResponseEntity<List<OrderResponse>> findByMemberId(@RequestParam Long memberId) {
+        List<OrderResponse> response = orderService.findByMemberId(memberId);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OrderDetailResponse> findById(@PathVariable Long id, @RequestParam Long customerId) {
-        return ResponseEntity.ok(orderService.findById(id, customerId));
+    public ResponseEntity<OrderDetailResponse> findById(@PathVariable Long id, @RequestParam Long memberId) {
+        return ResponseEntity.ok(orderService.findById(id, memberId));
     }
 
     // 관리자용

@@ -18,31 +18,31 @@ public class CartRepository {
     private final JdbcTemplate jdbcTemplate;
     private final RowMapper<Cart> cartRowMapper = (rs, rowNum) -> Cart.builder()
             .cartId(rs.getLong("cart_id"))
-            .customerId(rs.getLong("customer_id"))
+            .memberId(rs.getLong("member_id"))
             .build();
 
     public Cart save(Cart cart) {
-        String sql = "insert into carts (customer_id) values (?)";
+        String sql = "insert into carts (member_id) values (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update((conn) -> {
             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            pstmt.setLong(1, cart.getCustomerId());
+            pstmt.setLong(1, cart.getMemberId());
             return pstmt;
         }, keyHolder);
 
-        return findByCustomerId(cart.getCustomerId())
+        return findByMemberId(cart.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("고객 조회 실패"));
     }
 
-    public Optional<Cart> findByCustomerId(Long customerId) {
-        String sql = "select cart_id, customer_id from carts where customer_id=?";
-        List<Cart> result = jdbcTemplate.query(sql, cartRowMapper, customerId);
+    public Optional<Cart> findByMemberId(Long memberId) {
+        String sql = "select cart_id, member_id from carts where member_id=?";
+        List<Cart> result = jdbcTemplate.query(sql, cartRowMapper, memberId);
 
         return result.stream().findFirst();
     }
 
-    public void deleteByCustomerId(Long customerId) {
-        String sql = "delete from carts where customer_id=?";
-        jdbcTemplate.update(sql, customerId);
+    public void deleteByMemberId(Long memberId) {
+        String sql = "delete from carts where member_id=?";
+        jdbcTemplate.update(sql, memberId);
     }
 }

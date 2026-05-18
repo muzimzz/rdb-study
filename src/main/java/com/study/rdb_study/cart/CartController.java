@@ -12,7 +12,7 @@ public class CartController {
     private final CartService cartService;
 
     @GetMapping
-    public ResponseEntity<CartResponse> findByCustomerId(@RequestParam Long customerId) {
-        return ResponseEntity.ok(cartService.findByCustomerId(customerId));
+    public ResponseEntity<CartResponse> findByMemberId(@RequestParam Long memberId) {
+        return ResponseEntity.ok(cartService.findByMemberId(memberId));
     }
 }

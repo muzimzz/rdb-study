@@ -1,4 +1,4 @@
-package com.study.rdb_study.customer;
+package com.study.rdb_study.member;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,11 +13,11 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class CustomerRepository {
+public class MemberRepository {
 
     private final JdbcTemplate jdbcTemplate;
-    private final RowMapper<Customer> customerRowMapper = (rs, rowNum) -> Customer.builder()
-            .customerId(rs.getLong("customer_id"))
+    private final RowMapper<Member> memberRowMapper = (rs, rowNum) -> Member.builder()
+            .memberId(rs.getLong("member_id"))
             .name(rs.getString(("name")))
             .email(rs.getString("email"))
             .address(rs.getString("address"))
@@ -26,17 +26,17 @@ public class CustomerRepository {
             .build();
 
     // 회원가입
-    public Customer save(Customer customer) {
-        String sql = "insert into customers (name, email, password, address, status) values (?, ?, ?, ?, ?)";
+    public Member save(Member member) {
+        String sql = "insert into members (name, email, password, address, status) values (?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(conn -> {
             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, customer.getName());
-            pstmt.setString(2, customer.getEmail());
-            pstmt.setString(3, customer.getPassword());
-            pstmt.setString(4, customer.getAddress());
-            pstmt.setString(5, customer.getStatus());
+            pstmt.setString(1, member.getName());
+            pstmt.setString(2, member.getEmail());
+            pstmt.setString(3, member.getPassword());
+            pstmt.setString(4, member.getAddress());
+            pstmt.setString(5, member.getStatus());
             return pstmt;
         }, keyHolder);
 
@@ -45,16 +45,16 @@ public class CustomerRepository {
     }
 
     // 회원 조회
-    public Optional<Customer> findById(Long id) {
-        String sql = "select customer_id, name, email, address, status, join_date from customers where customer_id=?";
+    public Optional<Member> findById(Long id) {
+        String sql = "select member_id, name, email, address, status, join_date from members where member_id=?";
 
-        List<Customer> result = jdbcTemplate.query(sql, customerRowMapper, id);
+        List<Member> result = jdbcTemplate.query(sql, memberRowMapper, id);
         return result.stream().findFirst();
     }
 
     // 현재 비밀번호 검증(관리자용?)
     public Optional<String> findPasswordById(Long id) {
-        String sql = "select password from customers where customer_id=?";
+        String sql = "select password from members where member_id=?";
 
         List<String> result = jdbcTemplate.query(sql, (rs, rowNum) -> {
             return rs.getString(1);
@@ -64,36 +64,36 @@ public class CustomerRepository {
     }
 
     // 관리자용
-    public List<Customer> findAll() {
-        String sql = "select customer_id, name, email, address, status, join_date from customers";
+    public List<Member> findAll() {
+        String sql = "select member_id, name, email, address, status, join_date from members";
 
-        return jdbcTemplate.query(sql, customerRowMapper);
+        return jdbcTemplate.query(sql, memberRowMapper);
     }
 
     // 회원정보 수정
-    public void update(Customer customer) {
-        String sql = "update customers set email=?, address=? where customer_id=?";
+    public void update(Member member) {
+        String sql = "update members set email=?, address=? where member_id=?";
 
-        jdbcTemplate.update(sql, customer.getEmail(), customer.getAddress(), customer.getCustomerId());
+        jdbcTemplate.update(sql, member.getEmail(), member.getAddress(), member.getMemberId());
     }
 
     // 비밀번호 변경
     public void updatePassword(Long id, String newPassword) {
-        String sql = "update customers set password=? where customer_id=?";
+        String sql = "update members set password=? where member_id=?";
 
         jdbcTemplate.update(sql, newPassword, id);
     }
 
     // 회원탈퇴 (INACTIVE)
     public void updateStatus(Long id, String status) {
-        String sql = "update customers set status=? where customer_id=?";
+        String sql = "update members set status=? where member_id=?";
 
         jdbcTemplate.update(sql, status, id);
     }
 
     // update 시 회원 존재 검증
     public boolean existsById(Long id) {
-        String sql = "select count(*) from customers where customer_id=?";
+        String sql = "select count(*) from members where member_id=?";
 
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
 

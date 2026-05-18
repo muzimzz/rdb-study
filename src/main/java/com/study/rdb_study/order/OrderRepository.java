@@ -1,6 +1,5 @@
 package com.study.rdb_study.order;
 
-import com.study.rdb_study.order.dto.OrderResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -19,19 +18,19 @@ public class OrderRepository {
     private final JdbcTemplate jdbcTemplate;
     private final RowMapper<Order> orderRowMapper = (rs, rowNum) -> Order.builder()
             .orderId(rs.getLong("order_id"))
-            .customerId(rs.getLong("customer_id"))
+            .memberId(rs.getLong("member_id"))
             .orderDate(rs.getTimestamp("order_date").toLocalDateTime())
             .status(rs.getString("status"))
             .build();
 
     // 주문 생성
     public Order save(Order order) {
-        String sql = "insert into orders (customer_id, status) values (?, ?)";
+        String sql = "insert into orders (member_id, status) values (?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(conn -> {
             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            pstmt.setLong(1, order.getCustomerId());
+            pstmt.setLong(1, order.getMemberId());
             pstmt.setString(2, order.getStatus());
             return pstmt;
         }, keyHolder);
@@ -42,7 +41,7 @@ public class OrderRepository {
 
     // 주문 단건 조회, 주문 취소 시 검증
     public Optional<Order> findById(Long id) {
-        String sql = "select order_id, customer_id, order_date, status from orders where order_id=?";
+        String sql = "select order_id, member_id, order_date, status from orders where order_id=?";
 
         return jdbcTemplate.query(sql, orderRowMapper, id)
                 .stream()
@@ -50,15 +49,15 @@ public class OrderRepository {
     }
 
     // 내 주문 목록
-    public List<Order> findByCustomerId(Long id) {
-        String sql = "select order_id, customer_id, order_date, status from orders where customer_id=?";
+    public List<Order> findByMemberId(Long id) {
+        String sql = "select order_id, member_id, order_date, status from orders where member_id=?";
 
         return jdbcTemplate.query(sql, orderRowMapper, id);
     }
 
     // 관리자용
     public List<Order> findAll() {
-        String sql = "select order_id, customer_id, order_date, status from orders";
+        String sql = "select order_id, member_id, order_date, status from orders";
 
         return jdbcTemplate.query(sql, orderRowMapper);
     }

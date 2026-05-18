@@ -10,12 +10,12 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class OrderCreateRequest {
-    private Long customerId;
+    private Long memberId;
     // private String status; --관리자용
 
     public Order toEntity() {
         return Order.builder()
-                .customerId(this.customerId)
+                .memberId(this.memberId)
                 .status("PENDING") // 주문 생성 시 무조건 PENDING으로 고정
                 .build();
     }
@@ -24,7 +24,7 @@ public class OrderCreateRequest {
 //    public Order toEntityWithId(Long id) {
 //        return Order.builder()
 //                .orderId(id)
-//                .customerId(this.customerId)
+//                .memberId(this.memberId)
 //                .status(this.status) // update에 사용: 배송상태 변경 가능하도록 받기
 //                .build();
 //    }

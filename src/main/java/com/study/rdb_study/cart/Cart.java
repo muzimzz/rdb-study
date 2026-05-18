@@ -8,12 +8,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Cart {
     private Long cartId;
-    private Long customerId;
+    private Long memberId;
     // private List<CartItemResponse>
 
     @Builder
-    public Cart(Long cartId, Long customerId) {
+    public Cart(Long cartId, Long memberId) {
         this.cartId = cartId;
-        this.customerId = customerId;
+        this.memberId = memberId;
     }
 }

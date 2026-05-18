@@ -4,7 +4,7 @@ import com.study.rdb_study.cart.Cart;
 import com.study.rdb_study.cart.CartRepository;
 import com.study.rdb_study.cartItem.CartItem;
 import com.study.rdb_study.cartItem.CartItemRepository;
-import com.study.rdb_study.customer.CustomerRepository;
+import com.study.rdb_study.member.MemberRepository;
 import com.study.rdb_study.order.dto.OrderDetailResponse;
 import com.study.rdb_study.order.dto.OrderCreateRequest;
 import com.study.rdb_study.order.dto.OrderResponse;
@@ -28,18 +28,18 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
-    private final CustomerRepository customerRepository;
+    private final MemberRepository memberRepository;
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
 
     // 주문정보 저장, 주문상세 반환, order_items에 save, 장바구니 제거, 재고 차감
     public OrderDetailResponse save(OrderCreateRequest orderCreateRequest) {
         // 고객 존재 여부 검증
-        customerRepository.findById(orderCreateRequest.getCustomerId())
+        memberRepository.findById(orderCreateRequest.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 고객"));
 
         // 장바구니 존재 여부 겁증
-        Cart cart = cartRepository.findByCustomerId(orderCreateRequest.getCustomerId())
+        Cart cart = cartRepository.findByMemberId(orderCreateRequest.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 장바구니"));
 
         // 장바구니 비어있는지 검증
@@ -84,12 +84,12 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public OrderDetailResponse findById(Long orderId, Long customerId) {
+    public OrderDetailResponse findById(Long orderId, Long memberId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문 조회 실패"));
 
-        // Spring Security 도입하면 customerId직접 받지 않아도 됨
-        if (!order.getCustomerId().equals(customerId)) {
+        // Spring Security 도입하면 memberId직접 받지 않아도 됨
+        if (!order.getMemberId().equals(memberId)) {
             throw new IllegalArgumentException("본인 주문만 조회 가능");
         }
 
@@ -98,9 +98,9 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderResponse> findByCustomerId(Long customerId) {
+    public List<OrderResponse> findByMemberId(Long memberId) {
 
-        List<Order> orders = orderRepository.findByCustomerId(customerId);
+        List<Order> orders = orderRepository.findByMemberId(memberId);
 
         return orders.stream()
                 .map(order -> {

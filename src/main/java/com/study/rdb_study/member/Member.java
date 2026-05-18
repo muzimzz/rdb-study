@@ -1,4 +1,4 @@
-package com.study.rdb_study.customer;
+package com.study.rdb_study.member;
 
 import lombok.*;
 
@@ -6,8 +6,8 @@ import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
-public class Customer {
-    private Long customerId;
+public class Member {
+    private Long memberId;
     private String name;
     private String email;
     private String password;
@@ -16,8 +16,8 @@ public class Customer {
     private LocalDateTime joinDate;
 
     @Builder
-    public Customer(Long customerId, String name, String email, String password, String address, String status, LocalDateTime joinDate) {
-        this.customerId = customerId;
+    public Member(Long memberId, String name, String email, String password, String address, String status, LocalDateTime joinDate) {
+        this.memberId = memberId;
         this.name = name;
         this.email = email;
         this.password = password;

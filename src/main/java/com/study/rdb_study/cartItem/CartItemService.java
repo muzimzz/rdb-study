@@ -14,11 +14,11 @@ public class CartItemService {
     private final CartRepository cartRepository;
 
     // 장바구니 조회는 Cart에서 하는 것이 적절
-    // public List<CartItemResponse> findByCartId(Long customerId) { }
+    // public List<CartItemResponse> findByCartId(Long memberId) { }
 
     // 장바구니에 상품 추가
     public void addItem(CartItemRequest request) {
-        Cart cart = cartRepository.findByCustomerId(request.getCustomerId())
+        Cart cart = cartRepository.findByMemberId(request.getMemberId())
                         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원"));
         cartItemRepository.save(request.toEntity(cart.getCartId()));
     }

@@ -1,4 +1,4 @@
-package com.study.rdb_study.customer;
+package com.study.rdb_study.member;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,4 +1,4 @@
-package com.study.rdb_study.customer;
+package com.study.rdb_study.member;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,21 +9,21 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @Builder
-public class CustomerResponse {
+public class MemberResponse {
 
-    private Long customerId;
+    private Long memberId;
     private String name;
     private String email;
     private String address;
     private LocalDateTime joinDate;
 
-    public static CustomerResponse toDto(Customer customer) {
-        return CustomerResponse.builder()
-                .customerId(customer.getCustomerId())
-                .name(customer.getName())
-                .email(customer.getEmail())
-                .address(customer.getAddress())
-                .joinDate(customer.getJoinDate())
+    public static MemberResponse toDto(Member member) {
+        return MemberResponse.builder()
+                .memberId(member.getMemberId())
+                .name(member.getName())
+                .email(member.getEmail())
+                .address(member.getAddress())
+                .joinDate(member.getJoinDate())
                 .build();
 
     }
