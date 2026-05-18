@@ -21,6 +21,7 @@ public class MemberRequest {
                 .password(this.password)
                 .address(this.address)
                 .status("ACTIVE")
+                .role(MemberRole.USER)
                 .build();
     }
 

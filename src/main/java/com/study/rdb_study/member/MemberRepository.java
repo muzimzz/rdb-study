@@ -22,12 +22,13 @@ public class MemberRepository {
             .email(rs.getString("email"))
             .address(rs.getString("address"))
             .status(rs.getString("status"))
+            .role(MemberRole.valueOf(rs.getString("role")))
             .joinDate(rs.getTimestamp("join_date").toLocalDateTime())
             .build();
 
     // 회원가입
     public Member save(Member member) {
-        String sql = "insert into members (name, email, password, address, status) values (?, ?, ?, ?, ?)";
+        String sql = "insert into members (name, email, password, address, status, role) values (?, ?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(conn -> {
@@ -37,6 +38,7 @@ public class MemberRepository {
             pstmt.setString(3, member.getPassword());
             pstmt.setString(4, member.getAddress());
             pstmt.setString(5, member.getStatus());
+            pstmt.setString(6, member.getRole().name());
             return pstmt;
         }, keyHolder);
 
@@ -46,7 +48,7 @@ public class MemberRepository {
 
     // 회원 조회
     public Optional<Member> findById(Long id) {
-        String sql = "select member_id, name, email, address, status, join_date from members where member_id=?";
+        String sql = "select member_id, name, email, address, status, role, join_date from members where member_id=?";
 
         List<Member> result = jdbcTemplate.query(sql, memberRowMapper, id);
         return result.stream().findFirst();
@@ -65,7 +67,7 @@ public class MemberRepository {
 
     // 관리자용
     public List<Member> findAll() {
-        String sql = "select member_id, name, email, address, status, join_date from members";
+        String sql = "select member_id, name, email, address, status, role, join_date from members";
 
         return jdbcTemplate.query(sql, memberRowMapper);
     }
