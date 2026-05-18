@@ -1,5 +1,5 @@
-### 고객(Customer) 생성 테스트
-POST http://localhost:8080/customers
+### 고객(member) 생성 테스트
+POST http://localhost:8080/members
 Content-Type: application/json
 
 {
@@ -26,7 +26,7 @@ POST http://localhost:8080/orders
 Content-Type: application/json
 
 {
-  "customerId": 55,
+  "memberId": 55,
   "orderDate": "2026-05-06T15:00",
   "status": "PENDING",
   "orderItems": [
