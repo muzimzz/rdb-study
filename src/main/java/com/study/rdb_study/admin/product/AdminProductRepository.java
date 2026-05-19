@@ -29,7 +29,7 @@ public class AdminProductRepository {
                 select product_id, name, price, stock_quantity, description, status, from products" +
                 where stock_quantity < 5
                 """;
-        return null;
+        return jdbcTemplate.query(sql, adminProductRowMapper);
     }
 
     // 장기 미판매 상품 조회
