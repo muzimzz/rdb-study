@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/admin/products")
@@ -44,6 +45,18 @@ public class AdminProductController {
         adminProductService.updateStatus(id, "INACTIVE");
 
         return ResponseEntity.noContent().build();
+    }
 
+    @GetMapping
+    public ResponseEntity<List<AdminProductResponse>> findAll() {
+
+        List<AdminProductResponse> responseList = adminProductService.findAll();
+
+        return ResponseEntity.ok(responseList);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<AdminProductResponse> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(adminProductService.findById(id));
     }
 }

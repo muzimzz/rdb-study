@@ -23,6 +23,7 @@ public class AdminProductResponse {
                 .name(product.getName())
                 .price(product.getPrice())
                 .stockQuantity(product.getStockQuantity())
+                .description(product.getDescription())
                 .status(product.getStatus())
                 .build();
     }

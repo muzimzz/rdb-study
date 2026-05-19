@@ -1,16 +1,10 @@
 package com.study.rdb_study.admin.product;
 
-import com.study.rdb_study.product.Product;
-import com.study.rdb_study.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,5 +32,27 @@ public class AdminProductRepository {
     public List<AdminProductResponse> findLongUnsoldProducts() {
         // TODO
         return null;
+    }
+
+    // 상품 목록
+    public List<AdminProductResponse> findAll() {
+        String sql = "select product_id, name, price, stock_quantity, description, status from products";
+
+        return jdbcTemplate.query(sql, adminProductRowMapper);
+    }
+
+    //  단건 상품 조회(관리자용, 비활성화 상품 포함)
+    public Optional<AdminProductResponse> findById(Long id) {
+        String sql = "select product_id, name, price, stock_quantity, description, status from products where product_id = ?";
+
+        List<AdminProductResponse> result = jdbcTemplate.query(sql, adminProductRowMapper, id);
+        return result.stream().findFirst();
+    }
+
+    public boolean existsById(Long id) {
+        String sql = "select count(*) from products where product_id=?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+
+        return count != null && count > 0;
     }
 }

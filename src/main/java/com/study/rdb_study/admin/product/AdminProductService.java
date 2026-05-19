@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -18,16 +20,29 @@ public class AdminProductService {
     }
 
     public void update(Long id, AdminProductRequest request) {
-        if (!productRepository.existsById(id))
+        if (!adminProductRepository.existsById(id))
             throw new IllegalArgumentException("존재하지 않는 상품");
         productRepository.update(request.toEntityWithId(id));
     }
 
     public void updateStatus(Long id, String status) {
 
-        if (!productRepository.existsById(id))
+        if (!adminProductRepository.existsById(id))
             throw new IllegalArgumentException("존재하지 않는 상품");
 
         productRepository.updateStatus(id, status);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdminProductResponse> findAll() {
+
+        return adminProductRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public AdminProductResponse findById(Long id) {
+
+        return adminProductRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품"));
     }
 }
