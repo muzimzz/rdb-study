@@ -15,23 +15,6 @@ public class ProductController {
 
     private final ProductService productService;
 
-    // 관리자용
-    @PostMapping
-    public ResponseEntity<ProductResponse> save(@RequestBody ProductRequest request) {
-        ProductResponse response = productService.save(request);
-
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(response.getProductId())
-                .toUri();
-
-        return ResponseEntity
-                // .created(URI.create("/products/" + response.getProductId()))
-                .created(location)
-                .body(response);
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> findById(@PathVariable Long id) {
         ProductResponse response = productService.findById(id);
@@ -42,23 +25,5 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<List<ProductResponse>> findAll() {
         return ResponseEntity.ok(productService.findAll());
-    }
-
-    // 관리자용
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> update(@PathVariable Long id,
-                       @RequestBody ProductRequest request) {
-        productService.update(id, request);
-
-        return ResponseEntity.noContent().build();
-    }
-
-    // 관리자용
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> updateStatus(@PathVariable Long id) {
-        productService.updateStatus(id, "INACTIVE");
-
-        return ResponseEntity.noContent().build();
-
     }
 }
