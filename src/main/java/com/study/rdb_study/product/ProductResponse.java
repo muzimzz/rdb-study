@@ -11,18 +11,14 @@ public class ProductResponse {
     private Long productId;
     private String name;
     private int price;
-    private int stockQuantity;
     private String description;
-    private String status;
 
     public static ProductResponse toDto(Product product) {
         return ProductResponse.builder()
                 .productId(product.getProductId())
                 .name(product.getName())
                 .price(product.getPrice())
-                .stockQuantity(product.getStockQuantity())
                 .description(product.getDescription())
-                .status(product.getStatus())
                 .build();
     }
 }
