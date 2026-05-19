@@ -8,6 +8,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AdminMemberService {
 
     private final AdminMemberRepository adminMemberRepository;
