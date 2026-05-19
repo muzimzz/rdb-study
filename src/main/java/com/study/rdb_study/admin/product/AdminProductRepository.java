@@ -22,9 +22,13 @@ public class AdminProductRepository {
             .status(rs.getString("status"))
             .build();
 
+    // Todo: JPA+QueryDSL로 하나의 메서드에서 조건 조합
     // 품절임박 상품 조회
     public List<AdminProductResponse> findLowStockProducts() {
-        // TODO
+        String sql = """
+                select product_id, name, price, stock_quantity, description, status, from products" +
+                where stock_quantity < 5
+                """;
         return null;
     }
 
