@@ -31,13 +31,6 @@ public class MemberService {
                 .orElseThrow(() -> new IllegalArgumentException("회원 조회 실패")));
     }
 
-    @Transactional(readOnly = true)
-    public List<MemberResponse> findAll() {
-        return memberRepository.findAll().stream()
-                .map(MemberResponse::toDto)
-                .collect(Collectors.toList());
-    }
-
     public void update(Long id, MemberRequest memberRequest) {
         if (!memberRepository.existsById(id)) {
             throw new IllegalArgumentException("존재하지 않는 사용자");

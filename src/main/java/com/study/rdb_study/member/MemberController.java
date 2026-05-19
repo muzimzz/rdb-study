@@ -41,12 +41,6 @@ public class MemberController {
         return ResponseEntity.ok(response);
     }
 
-    // 관리자용
-    @GetMapping
-    public ResponseEntity<List<MemberResponse>> findAll() {
-        return ResponseEntity.ok(memberService.findAll());
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable Long id,
                        @RequestBody MemberRequest request) {

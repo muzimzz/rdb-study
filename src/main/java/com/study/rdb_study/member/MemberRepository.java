@@ -65,13 +65,6 @@ public class MemberRepository {
         return result.stream().findFirst();
     }
 
-    // 관리자용
-    public List<Member> findAll() {
-        String sql = "select member_id, name, email, address, status, role, join_date from members";
-
-        return jdbcTemplate.query(sql, memberRowMapper);
-    }
-
     // 회원정보 수정
     public void update(Member member) {
         String sql = "update members set email=?, address=? where member_id=?";
