@@ -48,7 +48,7 @@ public class OrderService {
         // 장바구니 비어있는지 검증
         List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getCartId());
         if (cartItems.isEmpty()) {
-            throw new NotFoundException("빈 장바구니");
+            throw new BadRequestException("빈 장바구니");
         }
 
         // 장바구니 각 아이템 존재 여부, 주문 개수 여부, 재고 부족 검증
