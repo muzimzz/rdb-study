@@ -26,7 +26,8 @@ public class AdminProductRepository {
     // 품절임박 상품 조회
     public List<AdminProductResponse> findLowStockProducts() {
         String sql = """
-                select product_id, name, price, stock_quantity, description, status, from products" +
+                select product_id, name, price, stock_quantity, description, status 
+                from products 
                 where stock_quantity < 5
                 """;
         return jdbcTemplate.query(sql, adminProductRowMapper);
