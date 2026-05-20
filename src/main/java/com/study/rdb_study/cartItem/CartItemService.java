@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -20,7 +22,13 @@ public class CartItemService {
     public void addItem(CartItemRequest request) {
         Cart cart = cartRepository.findByMemberId(request.getMemberId())
                         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 장바구니"));
-        cartItemRepository.save(request.toEntity(cart.getCartId()));
+
+        Optional<CartItem> existing = cartItemRepository.findByCartIdAndProductId(cart.getCartId(), request.getProductId());
+        if (existing.isPresent()) {
+            cartItemRepository.addQuantity(cart.getCartId(), request.getQuantity());
+        } else {
+            cartItemRepository.save(request.toEntity(cart.getCartId()));
+        }
     }
 
     // 장바구니 수량 변경

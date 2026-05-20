@@ -1,5 +1,6 @@
 package com.study.rdb_study.cartItem;
 
+import com.study.rdb_study.cart.Cart;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -91,8 +92,24 @@ public class CartItemRepository {
     }
 
     // Todo
-    public Optional<CartItem> findByCartIdAndProductId() {
-        // save: upsert 구현 시 필요
-        return null;
+    public Optional<CartItem> findByCartIdAndProductId(Long cartId, Long productId) {
+        String sql = """
+                select cart_item_id, cart_id, product_id, quantity from cart_items
+                where cart_id=? and product_id=?
+                """;
+
+
+        return jdbcTemplate.query(sql, cartItemRowMapper, cartId, productId)
+                .stream()
+                .findFirst();
+    }
+
+    public void addQuantity(Long cartId, int quantity) {
+        String sql = """
+                update cart_items set quantity = quantity + ?
+                where cart_id = ?
+                """;
+
+        jdbcTemplate.update(sql, quantity, cartId);
     }
 }
