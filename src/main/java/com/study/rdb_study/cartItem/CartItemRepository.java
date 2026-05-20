@@ -104,12 +104,12 @@ public class CartItemRepository {
                 .findFirst();
     }
 
-    public void addQuantity(Long cartId, int quantity) {
+    public void addQuantity(Long cartItemId, int quantity) {
         String sql = """
                 update cart_items set quantity = quantity + ?
-                where cart_id = ?
+                where cartitem_id = ?
                 """;
 
-        jdbcTemplate.update(sql, quantity, cartId);
+        jdbcTemplate.update(sql, quantity, cartItemId);
     }
 }

@@ -27,7 +27,7 @@ public class CartItemService {
 
         Optional<CartItem> existing = cartItemRepository.findByCartIdAndProductId(cart.getCartId(), request.getProductId());
         if (existing.isPresent()) {
-            cartItemRepository.addQuantity(cart.getCartId(), request.getQuantity());
+            cartItemRepository.addQuantity(existing.get().getCartItemId(),  request.getQuantity());
         } else {
             cartItemRepository.save(request.toEntity(cart.getCartId()));
         }
