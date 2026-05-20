@@ -62,10 +62,21 @@ public class ProductRepository {
     }
 
     // AdminProductService
+    // Todo: JPA → DirtyChecking + @PreUpdate로 Entity Update 직전에 StockQuantity 확인 (LifeCycle Callback)
     public void update(Product product) {
         String sql = "update products set name=?, price=?, stock_quantity=?, description=? where product_id=?";
+        String soldOutSql = """
+                update products set status = 'SOLD_OUT'
+                where product_id = ? and status = 'ON_SALE' and stock_quantity = 0
+                """;
+        String onSaleSql = """
+                update products set status = 'ON_SALE'
+                where product_id = ? and status = 'SOLD_OUT' and stock_quantity > 0
+                """;
 
         jdbcTemplate.update(sql, product.getName(), product.getPrice(), product.getStockQuantity(), product.getDescription(), product.getProductId());
+        jdbcTemplate.update(soldOutSql, product.getProductId());
+        jdbcTemplate.update(onSaleSql, product.getProductId());
     }
 
     // 상품data 물리적 삭제 → softDelete(updateStatus)
@@ -78,7 +89,9 @@ public class ProductRepository {
     // AdminProductService
     public void updateStatus(Long id, ProductStatus status) {
         String sql = "update products set status=? where product_id=?";
+
         jdbcTemplate.update(sql, status.name(), id);
+
     }
 
     // 재고/주문 검증용
@@ -90,15 +103,26 @@ public class ProductRepository {
     }
 
     // 주문 시 재고 차감(내부용)
-    public void decreaseStock(Long productId, int quantity) {
+    public void decreaseStock(Long id, int quantity) {
         // product.save() 시점의 quantity는 업데이트 되지 않기 때문에 DB레벨에서 stock_quantity를 검사한다
         String sql = "update products set stock_quantity = stock_quantity - ? " +
                      "where product_id = ? and stock_quantity >= ?";
+        String soldOutSql = """
+                    update products set status = 'SOLD_OUT'
+                    where product_id = ? and status = 'ON_SALE' and stock_quantity = 0
+                    """;
 
         // 영향받은 row가 0이면 재고 부족 (또는 동시 요청으로 인한 race condition)
-        int updatedRows = jdbcTemplate.update(sql, quantity, productId, quantity);
+        int updatedRows = jdbcTemplate.update(sql, quantity, id, quantity);
         if (updatedRows == 0)
             throw new BadRequestException("재고가 부족합니다.");
+
+//        Product updatedProduct = findById(productId)
+//                .orElseThrow(() -> new IllegalArgumentException("상품 조회 실패"));
+//
+//        if (updatedProduct.getStockQuantity() == 0)
+          jdbcTemplate.update(soldOutSql, id);
+
     }
 
     // 주문 취소 시 재고 복구(내부용)
