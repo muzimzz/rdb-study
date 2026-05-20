@@ -51,7 +51,6 @@ public class CartItemRepository {
 
     public CartItem save(CartItem cartItem) {
         String insertSql = "insert into cart_items (cart_id, product_id, quantity) values (?, ?, ?)";
-        String updateSql = "update cart_items set quantity = quantity + ? where cart_id";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         // if ()
