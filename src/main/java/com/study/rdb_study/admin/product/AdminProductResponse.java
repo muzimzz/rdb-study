@@ -1,6 +1,7 @@
 package com.study.rdb_study.admin.product;
 
 import com.study.rdb_study.product.Product;
+import com.study.rdb_study.product.ProductStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +16,7 @@ public class AdminProductResponse {
     private int price;
     private int stockQuantity;
     private String description;
-    private String status;
+    private ProductStatus status;
 
     public static AdminProductResponse toDto(Product product) {
         return AdminProductResponse.builder()

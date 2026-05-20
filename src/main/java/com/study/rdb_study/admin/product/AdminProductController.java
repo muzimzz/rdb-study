@@ -1,6 +1,7 @@
 package com.study.rdb_study.admin.product;
 
 
+import com.study.rdb_study.product.ProductStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,7 +43,7 @@ public class AdminProductController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> updateStatus(@PathVariable Long id) {
-        adminProductService.updateStatus(id, "INACTIVE");
+        adminProductService.updateStatus(id, ProductStatus.DISCONTINUED);
 
         return ResponseEntity.noContent().build();
     }

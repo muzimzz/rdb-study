@@ -1,6 +1,7 @@
 package com.study.rdb_study.admin.product;
 
 import com.study.rdb_study.product.Product;
+import com.study.rdb_study.product.ProductStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -18,6 +19,7 @@ public class AdminProductRequest {
                 .price(this.price)
                 .stockQuantity(this.stockQuantity)
                 .description(this.description)
+                .status(ProductStatus.ON_SALE)
                 .build();
     }
 

@@ -1,5 +1,6 @@
 package com.study.rdb_study.admin.product;
 
+import com.study.rdb_study.product.ProductStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -19,7 +20,7 @@ public class AdminProductRepository {
             .price(rs.getInt("price"))
             .stockQuantity(rs.getInt("stock_quantity"))
             .description(rs.getString("description"))
-            .status(rs.getString("status"))
+            .status(ProductStatus.valueOf(rs.getString("status")))
             .build();
 
     // Todo: JPA+QueryDSL로 하나의 메서드에서 조건 조합

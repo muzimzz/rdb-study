@@ -2,6 +2,7 @@ package com.study.rdb_study.admin.product;
 
 import com.study.rdb_study.global.exception.NotFoundException;
 import com.study.rdb_study.product.ProductRepository;
+import com.study.rdb_study.product.ProductStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +27,7 @@ public class AdminProductService {
         productRepository.update(request.toEntityWithId(id));
     }
 
-    public void updateStatus(Long id, String status) {
+    public void updateStatus(Long id, ProductStatus status) {
 
         if (!adminProductRepository.existsById(id))
             throw new NotFoundException("존재하지 않는 상품");

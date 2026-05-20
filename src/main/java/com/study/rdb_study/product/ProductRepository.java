@@ -23,12 +23,12 @@ public class ProductRepository {
             .price(rs.getInt("price"))
             .stockQuantity(rs.getInt("stock_quantity"))
             .description(rs.getString("description"))
-            .status(rs.getString("status"))
+            .status(ProductStatus.valueOf(rs.getString("status")))
             .build();
 
     // AdminProductService
     public Product save(Product product) {
-        String sql = "insert into products (name, price, stock_quantity, description) values (?, ?, ?, ?)";
+        String sql = "insert into products (name, price, stock_quantity, description, status) values (?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(conn -> {
@@ -38,6 +38,7 @@ public class ProductRepository {
             pstmt.setInt(2, product.getPrice());
             pstmt.setInt(3, product.getStockQuantity());
             pstmt.setString(4, product.getDescription());
+            pstmt.setString(5, product.getStatus().name());
             return pstmt;
         }, keyHolder);
 
@@ -47,7 +48,7 @@ public class ProductRepository {
 
     // AdminProductService
     public Optional<Product> findById(Long id) {
-        String sql = "select product_id, name, price, stock_quantity, description, status from products where product_id = ? and status='ACTIVE'";
+        String sql = "select product_id, name, price, stock_quantity, description, status from products where product_id = ? and status='ON_SALE'";
 
         List<Product> result = jdbcTemplate.query(sql, productRowMapper, id);
         return result.stream().findFirst();
@@ -55,7 +56,7 @@ public class ProductRepository {
 
     // AdminProductService
     public List<Product> findAll() {
-        String sql = "select product_id, name, price, stock_quantity, description, status from products where status='ACTIVE'";
+        String sql = "select product_id, name, price, stock_quantity, description, status from products where status='ON_SALE'";
 
         return jdbcTemplate.query(sql, productRowMapper);
     }
@@ -75,14 +76,14 @@ public class ProductRepository {
     }
 
     // AdminProductService
-    public void updateStatus(Long id, String status) {
+    public void updateStatus(Long id, ProductStatus status) {
         String sql = "update products set status=? where product_id=?";
-        jdbcTemplate.update(sql, status, id);
+        jdbcTemplate.update(sql, status.name(), id);
     }
 
     // 재고/주문 검증용
     public boolean existsById(Long id) {
-        String sql = "select count(*) from products where product_id=? and status='ACTIVE'";
+        String sql = "select count(*) from products where product_id=? and status='ON_SALE'";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
 
         return count != null && count > 0;
