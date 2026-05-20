@@ -21,7 +21,7 @@ public class MemberRepository {
             .name(rs.getString(("name")))
             .email(rs.getString("email"))
             .address(rs.getString("address"))
-            .status(rs.getString("status"))
+            .status(MemberStatus.valueOf(rs.getString("status")))
             .role(MemberRole.valueOf(rs.getString("role")))
             .joinDate(rs.getTimestamp("join_date").toLocalDateTime())
             .build();
@@ -37,7 +37,7 @@ public class MemberRepository {
             pstmt.setString(2, member.getEmail());
             pstmt.setString(3, member.getPassword());
             pstmt.setString(4, member.getAddress());
-            pstmt.setString(5, member.getStatus());
+            pstmt.setString(5, member.getStatus().name());
             pstmt.setString(6, member.getRole().name());
             return pstmt;
         }, keyHolder);
@@ -80,10 +80,10 @@ public class MemberRepository {
     }
 
     // 회원탈퇴 (INACTIVE)
-    public void updateStatus(Long id, String status) {
+    public void updateStatus(Long id, MemberStatus status) {
         String sql = "update members set status=? where member_id=?";
 
-        jdbcTemplate.update(sql, status, id);
+        jdbcTemplate.update(sql, status.name(), id);
     }
 
     // update 시 회원 존재 검증

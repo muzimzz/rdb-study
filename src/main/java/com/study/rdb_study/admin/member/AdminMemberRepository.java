@@ -1,6 +1,7 @@
 package com.study.rdb_study.admin.member;
 
 import com.study.rdb_study.member.MemberRole;
+import com.study.rdb_study.member.MemberStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -18,7 +19,7 @@ public class AdminMemberRepository {
             .name(rs.getString("name"))
             .email(rs.getString("email"))
             .address(rs.getString("address"))
-            .status(rs.getString("status"))
+            .status(MemberStatus.valueOf(rs.getString("status")))
             .role(MemberRole.valueOf(rs.getString("role")))
             .joinDate(rs.getTimestamp("join_date").toLocalDateTime())
             .totalOrderCount(rs.getInt("total_order_count"))

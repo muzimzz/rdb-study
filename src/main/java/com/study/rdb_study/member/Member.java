@@ -12,12 +12,12 @@ public class Member {
     private String email;
     private String password;
     private String address;
-    private String status;  // 휴면 상태인지?
+    private MemberStatus status;  // 휴면 상태인지?
     private MemberRole role;
     private LocalDateTime joinDate;
 
     @Builder
-    public Member(Long memberId, String name, String email, String password, String address, String status, MemberRole role, LocalDateTime joinDate) {
+    public Member(Long memberId, String name, String email, String password, String address, MemberStatus status, MemberRole role, LocalDateTime joinDate) {
         this.memberId = memberId;
         this.name = name;
         this.email = email;

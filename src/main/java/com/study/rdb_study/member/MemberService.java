@@ -53,12 +53,12 @@ public class MemberService {
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자"));
 
-        if (member.getStatus().equals("INACTIVE")) {
+        if (member.getStatus() == (MemberStatus.INACTIVE)) {
             throw new IllegalArgumentException("이미 탈퇴한 사용자");
         }
 
         cartRepository.deleteByMemberId(id);
-        memberRepository.updateStatus(id, "INACTIVE");
+        memberRepository.updateStatus(id, MemberStatus.INACTIVE);
     }
 
 

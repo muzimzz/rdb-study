@@ -20,7 +20,7 @@ public class MemberRequest {
                 .email(this.email)
                 .password(this.password)
                 .address(this.address)
-                .status("ACTIVE")
+                .status(MemberStatus.ACTIVE)
                 .role(MemberRole.USER)
                 .build();
     }
