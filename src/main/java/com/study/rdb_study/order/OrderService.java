@@ -135,11 +135,11 @@ public class OrderService {
 
         // Security: 본인 삭제 검증 추가
 
-        if (order.getStatus().equals("CANCELLED")) {
+        if (order.getStatus().equals(OrderStatus.CANCELLED)) {
             throw new IllegalArgumentException("이미 취소된 주문, orderId: " + id);
         }
 
-        if (order.getStatus().equals("SHIPPED") || order.getStatus().equals("DELIVERED")) {
+        if (order.getStatus().equals(OrderStatus.SHIPPED) || order.getStatus().equals(OrderStatus.DELIVERED)) {
             throw new IllegalArgumentException("배송 중이거나 배송 완료된 주문은 취소할 수 없습니다.");
         }
 
@@ -148,7 +148,7 @@ public class OrderService {
             productRepository.increaseStock(orderItem.getProductId(), orderItem.getQuantity());
         }
 
-        orderRepository.updateStatus(id, "CANCELLED");
+        orderRepository.updateStatus(id, OrderStatus.CANCELLED);
     }
 
 

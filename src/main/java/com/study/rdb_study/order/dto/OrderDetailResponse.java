@@ -1,6 +1,7 @@
 package com.study.rdb_study.order.dto;
 
 import com.study.rdb_study.order.Order;
+import com.study.rdb_study.order.OrderStatus;
 import com.study.rdb_study.orderItem.OrderItemResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,12 +15,12 @@ public class OrderDetailResponse {
     private Long orderId;
     private Long memberId;
     private LocalDateTime orderDate;
-    private String status;
+    private OrderStatus status;
     private List<OrderItemResponse> orderItems;
     private int totalPrice;
 
     @Builder
-    public OrderDetailResponse(Long orderId, Long memberId, LocalDateTime orderDate, String status, List<OrderItemResponse> orderItems) {
+    public OrderDetailResponse(Long orderId, Long memberId, LocalDateTime orderDate, OrderStatus status, List<OrderItemResponse> orderItems) {
         this.orderId = orderId;
         this.memberId = memberId;
         this.orderDate = orderDate;

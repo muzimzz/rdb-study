@@ -20,7 +20,7 @@ public class OrderRepository {
             .orderId(rs.getLong("order_id"))
             .memberId(rs.getLong("member_id"))
             .orderDate(rs.getTimestamp("order_date").toLocalDateTime())
-            .status(rs.getString("status"))
+            .status(OrderStatus.valueOf(rs.getString("status")))
             .build();
 
     // 주문 생성
@@ -31,7 +31,7 @@ public class OrderRepository {
         jdbcTemplate.update(conn -> {
             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             pstmt.setLong(1, order.getMemberId());
-            pstmt.setString(2, order.getStatus());
+            pstmt.setString(2, order.getStatus().name());
             return pstmt;
         }, keyHolder);
 
@@ -86,8 +86,8 @@ public class OrderRepository {
     }
 
     // 주문 취소(CANCELLED)
-    public void updateStatus(Long id, String status) {
+    public void updateStatus(Long id, OrderStatus status) {
         String sql = "update orders set status=? where order_id=?";
-        jdbcTemplate.update(sql, status, id);
+        jdbcTemplate.update(sql, status.name(), id);
     }
 }

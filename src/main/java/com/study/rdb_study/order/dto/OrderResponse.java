@@ -1,6 +1,7 @@
 package com.study.rdb_study.order.dto;
 
 import com.study.rdb_study.order.Order;
+import com.study.rdb_study.order.OrderStatus;
 import com.study.rdb_study.orderItem.OrderItemResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +16,7 @@ import java.util.List;
 public class OrderResponse {
     private Long orderId;
     private LocalDateTime orderDate;
-    private String status;
+    private OrderStatus status;
     private String representativeProductName;
     private int totalPrice;
 
