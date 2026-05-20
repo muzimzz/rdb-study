@@ -48,9 +48,10 @@ public class AdminMemberRepository {
                		count(distinct o.order_id) as total_order_count,
                		max(o.order_date) as last_order_date
                	from orders o
-                   join order_items oi on o.order_id = oi.order_id
-                   join products p on oi.product_id = p.product_id
-                   group by o.member_id
+                    join order_items oi on o.order_id = oi.order_id
+                    join products p on oi.product_id = p.product_id
+                where o.status != 'CANCELLED'
+                group by o.member_id
                ) t on m.member_id = t.member_id;
         """;
 
