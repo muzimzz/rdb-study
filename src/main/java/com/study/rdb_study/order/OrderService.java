@@ -4,6 +4,9 @@ import com.study.rdb_study.cart.Cart;
 import com.study.rdb_study.cart.CartRepository;
 import com.study.rdb_study.cartItem.CartItem;
 import com.study.rdb_study.cartItem.CartItemRepository;
+import com.study.rdb_study.global.exception.BadRequestException;
+import com.study.rdb_study.global.exception.ForbiddenException;
+import com.study.rdb_study.global.exception.NotFoundException;
 import com.study.rdb_study.member.MemberRepository;
 import com.study.rdb_study.order.dto.OrderDetailResponse;
 import com.study.rdb_study.order.dto.OrderCreateRequest;
@@ -36,29 +39,29 @@ public class OrderService {
     public OrderDetailResponse save(OrderCreateRequest orderCreateRequest) {
         // 고객 존재 여부 검증
         memberRepository.findById(orderCreateRequest.getMemberId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 고객"));
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 고객"));
 
         // 장바구니 존재 여부 겁증
         Cart cart = cartRepository.findByMemberId(orderCreateRequest.getMemberId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 장바구니"));
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 장바구니"));
 
         // 장바구니 비어있는지 검증
         List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getCartId());
         if (cartItems.isEmpty()) {
-            throw new IllegalArgumentException("빈 장바구니");
+            throw new NotFoundException("빈 장바구니");
         }
 
         // 장바구니 각 아이템 존재 여부, 주문 개수 여부, 재고 부족 검증
         for (CartItem cartItem : cartItems) {
             Product product = productRepository.findById(cartItem.getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품ID: " + cartItem.getProductId()));
+                    .orElseThrow(() -> new NotFoundException("존재하지 않는 상품ID: " + cartItem.getProductId()));
 
             if (cartItem.getQuantity() <= 0) {
-                throw new IllegalArgumentException("주문 개수는 1 이상이어야 합니다.");
+                throw new BadRequestException("주문 개수는 1 이상이어야 합니다.");
             }
 
             if (cartItem.getQuantity() > product.getStockQuantity()) {
-                throw new IllegalArgumentException("-----재고 부족-----\n상품명: " + product.getName());
+                throw new BadRequestException("-----재고 부족-----\n상품명: " + product.getName());
             }
         }
 
@@ -86,11 +89,11 @@ public class OrderService {
     @Transactional(readOnly = true)
     public OrderDetailResponse findById(Long orderId, Long memberId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("주문 조회 실패"));
+                .orElseThrow(() -> new NotFoundException("주문 조회 실패"));
 
         // Spring Security 도입하면 memberId직접 받지 않아도 됨
         if (!order.getMemberId().equals(memberId)) {
-            throw new IllegalArgumentException("본인 주문만 조회 가능");
+            throw new ForbiddenException("본인 주문만 조회 가능");
         }
 
         List<OrderItemResponse> orderItems = orderItemRepository.findOrderItemsByOrderId(orderId);
@@ -124,22 +127,22 @@ public class OrderService {
     // 관리자용
 //    public void update(Long id, OrderCreateRequest orderCreateRequest) {
 //        if (!orderRepository.existsById(id))
-//            throw new IllegalArgumentException("존재하지 않는 주문");
+//            throw new NotFoundException("존재하지 않는 주문");
 //
 //        // orderRepository.update(orderUpdateRequest.toEntity(id));
 //    }
 
     public void cancelOrder(Long id) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문, orderId: " + id));
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 주문, orderId: " + id));
 
         // Security: 본인 삭제 검증 추가
 
         if (order.getStatus() == OrderStatus.CANCELLED) {
-            throw new IllegalArgumentException("이미 취소된 주문, orderId: " + id);
+            throw new BadRequestException("이미 취소된 주문, orderId: " + id);
         }
         if (order.getStatus() == OrderStatus.SHIPPED || order.getStatus() == OrderStatus.DELIVERED) {
-            throw new IllegalArgumentException("배송 중이거나 배송 완료된 주문은 취소할 수 없습니다.");
+            throw new BadRequestException("배송 중이거나 배송 완료된 주문은 취소할 수 없습니다.");
         }
 
         List<OrderItem> orderItems = orderItemRepository.findByOrderId(id);

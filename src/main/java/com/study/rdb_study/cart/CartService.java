@@ -2,6 +2,7 @@ package com.study.rdb_study.cart;
 
 import com.study.rdb_study.cartItem.CartItemRepository;
 import com.study.rdb_study.cartItem.CartItemResponse;
+import com.study.rdb_study.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +20,7 @@ public class CartService {
     @Transactional(readOnly = true)
     public CartResponse findByMemberId(Long memberId) {
         Cart cart = cartRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("장바구니가 존재하지 않음"));
+                .orElseThrow(() -> new NotFoundException("장바구니가 존재하지 않음"));
 
         List<CartItemResponse> cartItems = cartItemRepository.findCartItemsByCartId(cart.getCartId());
 

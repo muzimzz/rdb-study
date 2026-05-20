@@ -1,5 +1,6 @@
 package com.study.rdb_study.product;
 
+import com.study.rdb_study.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +18,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     public ProductResponse findById(Long id) {
         return ProductResponse.toDto(productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("상품 조회 실패")));
+                .orElseThrow(() -> new NotFoundException("상품 조회 실패")));
     }
 
     @Transactional(readOnly = true)

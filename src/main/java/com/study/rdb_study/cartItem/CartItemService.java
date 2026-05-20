@@ -2,6 +2,8 @@ package com.study.rdb_study.cartItem;
 
 import com.study.rdb_study.cart.Cart;
 import com.study.rdb_study.cart.CartRepository;
+import com.study.rdb_study.global.exception.BadRequestException;
+import com.study.rdb_study.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +23,7 @@ public class CartItemService {
     // 장바구니에 상품 추가
     public void addItem(CartItemRequest request) {
         Cart cart = cartRepository.findByMemberId(request.getMemberId())
-                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 장바구니"));
+                        .orElseThrow(() -> new NotFoundException("존재하지 않는 장바구니"));
 
         Optional<CartItem> existing = cartItemRepository.findByCartIdAndProductId(cart.getCartId(), request.getProductId());
         if (existing.isPresent()) {
@@ -34,7 +36,7 @@ public class CartItemService {
     // 장바구니 수량 변경
     public void updateQuantity(Long id, CartItemUpdateRequest request) {
         if (request.getQuantity() <= 0) {
-            throw new IllegalArgumentException("잘못된 수량 입력");
+            throw new BadRequestException("잘못된 수량 입력");
         }
         cartItemRepository.updateQuantity(id, request.toEntity());
     }

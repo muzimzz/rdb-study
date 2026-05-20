@@ -1,5 +1,6 @@
 package com.study.rdb_study.admin.product;
 
+import com.study.rdb_study.global.exception.NotFoundException;
 import com.study.rdb_study.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,14 +22,14 @@ public class AdminProductService {
 
     public void update(Long id, AdminProductRequest request) {
         if (!adminProductRepository.existsById(id))
-            throw new IllegalArgumentException("존재하지 않는 상품");
+            throw new NotFoundException("존재하지 않는 상품");
         productRepository.update(request.toEntityWithId(id));
     }
 
     public void updateStatus(Long id, String status) {
 
         if (!adminProductRepository.existsById(id))
-            throw new IllegalArgumentException("존재하지 않는 상품");
+            throw new NotFoundException("존재하지 않는 상품");
 
         productRepository.updateStatus(id, status);
     }
@@ -43,6 +44,6 @@ public class AdminProductService {
     public AdminProductResponse findById(Long id) {
 
         return adminProductRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품"));
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 상품"));
     }
 }

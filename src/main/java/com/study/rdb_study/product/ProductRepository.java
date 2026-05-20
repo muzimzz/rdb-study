@@ -1,5 +1,6 @@
 package com.study.rdb_study.product;
 
+import com.study.rdb_study.global.exception.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -96,7 +97,7 @@ public class ProductRepository {
         // 영향받은 row가 0이면 재고 부족 (또는 동시 요청으로 인한 race condition)
         int updatedRows = jdbcTemplate.update(sql, quantity, productId, quantity);
         if (updatedRows == 0)
-            throw new IllegalArgumentException("재고가 부족합니다.");
+            throw new BadRequestException("재고가 부족합니다.");
     }
 
     // 주문 취소 시 재고 복구(내부용)
