@@ -135,11 +135,10 @@ public class OrderService {
 
         // Security: 본인 삭제 검증 추가
 
-        if (order.getStatus().equals(OrderStatus.CANCELLED)) {
+        if (order.getStatus() == OrderStatus.CANCELLED) {
             throw new IllegalArgumentException("이미 취소된 주문, orderId: " + id);
         }
-
-        if (order.getStatus().equals(OrderStatus.SHIPPED) || order.getStatus().equals(OrderStatus.DELIVERED)) {
+        if (order.getStatus() == OrderStatus.SHIPPED || order.getStatus() == OrderStatus.DELIVERED) {
             throw new IllegalArgumentException("배송 중이거나 배송 완료된 주문은 취소할 수 없습니다.");
         }
 
