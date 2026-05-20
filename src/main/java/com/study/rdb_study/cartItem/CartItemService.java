@@ -19,7 +19,7 @@ public class CartItemService {
     // 장바구니에 상품 추가
     public void addItem(CartItemRequest request) {
         Cart cart = cartRepository.findByMemberId(request.getMemberId())
-                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원"));
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 장바구니"));
         cartItemRepository.save(request.toEntity(cart.getCartId()));
     }
 

@@ -43,3 +43,30 @@ Content-Type: application/json
 
 ### 주문 응답 테스트
 GET http://localhost:8080/orders/1
+
+### 장바구니에 상품 추가 (첫 번째)
+POST http://localhost:8080/cart-items
+Content-Type: application/json
+
+{
+  "memberId": 1,
+  "productId": 3,
+  "quantity": 2
+}
+
+###
+
+### 장바구니에 같은 상품 또 추가 (두 번째)
+POST http://localhost:8080/cart-items
+Content-Type: application/json
+
+{
+  "memberId": 1,
+  "productId": 3,
+  "quantity": 3
+}
+
+###
+
+### 장바구니 조회 (결과 확인)
+GET http://localhost:8080/carts?memberId=1

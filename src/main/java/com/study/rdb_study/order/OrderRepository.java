@@ -66,7 +66,7 @@ public class OrderRepository {
     public void update(Order newOrder) {
         String sql = "update orders set status=? where order_id=?";
 
-        jdbcTemplate.update(sql, newOrder.getStatus(), newOrder.getOrderId());
+        jdbcTemplate.update(sql, newOrder.getStatus().name(), newOrder.getOrderId());
     }
 
     // 관리자용

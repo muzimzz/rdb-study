@@ -49,11 +49,13 @@ public class CartItemRepository {
     }
 
     public CartItem save(CartItem cartItem) {
-        String sql = "insert into cart_items (cart_id, product_id, quantity) values (?, ?, ?)";
+        String insertSql = "insert into cart_items (cart_id, product_id, quantity) values (?, ?, ?)";
+        String updateSql = "update cart_items set quantity = quantity + ? where cart_id";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
+        // if ()
         jdbcTemplate.update(conn -> {
-            PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement pstmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS);
             pstmt.setLong(1, cartItem.getCartId());
             pstmt.setLong(2, cartItem.getProductId());
             pstmt.setInt(3, cartItem.getQuantity());

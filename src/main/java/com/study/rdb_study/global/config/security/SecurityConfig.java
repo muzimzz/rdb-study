@@ -10,6 +10,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    // Todo: BCryptPasswordEncoder 사용
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http

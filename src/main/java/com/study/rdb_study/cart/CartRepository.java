@@ -31,7 +31,7 @@ public class CartRepository {
         }, keyHolder);
 
         return findByMemberId(cart.getMemberId())
-                .orElseThrow(() -> new IllegalArgumentException("고객 조회 실패"));
+                .orElseThrow(() -> new IllegalArgumentException("장바구니 저장 후 조회 실패"));
     }
 
     public Optional<Cart> findByMemberId(Long memberId) {
