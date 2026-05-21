@@ -129,6 +129,11 @@ public class ProductRepository {
     // 주문 취소 시 재고 복구(내부용)
     public void increaseStock(Long productId, int quantity) {
         String sql = "update products set stock_quantity = stock_quantity + ? where product_id = ?";
+        String onSaleSql = """
+            update products set status = 'ON_SALE'
+            where product_id = ? and status = 'SOLD_OUT' and stock_quantity > 0
+            """;
         jdbcTemplate.update(sql, quantity, productId);
+        jdbcTemplate.update(onSaleSql, productId);
     }
 }
