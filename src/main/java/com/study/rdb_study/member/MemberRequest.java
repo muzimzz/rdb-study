@@ -14,11 +14,11 @@ public class MemberRequest {
     private String address;
 
     // save()용: password 포함
-    public Member toEntity() {
+    public Member toEntity(String encodedPassword) {
         return Member.builder()
                 .name(this.name)
                 .email(this.email)
-                .password(this.password)
+                .password(encodedPassword)
                 .address(this.address)
                 .status(MemberStatus.ACTIVE)
                 .role(MemberRole.USER)

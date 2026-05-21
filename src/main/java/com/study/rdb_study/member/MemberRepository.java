@@ -1,5 +1,6 @@
 package com.study.rdb_study.member;
 
+import com.study.rdb_study.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -26,6 +27,13 @@ public class MemberRepository {
             .joinDate(rs.getTimestamp("join_date").toLocalDateTime())
             .build();
 
+    private final RowMapper<Member> memberRowMapperWithPassword = (rs, rowNum) -> Member.builder()
+            .email(rs.getString("email"))
+            .password(rs.getString("password"))
+            .status(MemberStatus.valueOf(rs.getString("status")))
+            .role(MemberRole.valueOf(rs.getString("role")))
+            .build();
+
     // 회원가입
     public Member save(Member member) {
         String sql = "insert into members (name, email, password, address, status, role) values (?, ?, ?, ?, ?, ?)";
@@ -43,7 +51,16 @@ public class MemberRepository {
         }, keyHolder);
 
         return findById(keyHolder.getKey().longValue())
-                .orElseThrow(() -> new IllegalArgumentException("고객 조회 실패"));
+                .orElseThrow(() -> new NotFoundException("고객 조회 실패"));
+    }
+
+    // Security
+    public Optional<Member> findByEmail(String email) {
+        String sql = "select email, password, status, role from members where email=?";
+
+        return jdbcTemplate.query(sql, memberRowMapperWithPassword, email)
+                .stream()
+                .findFirst();
     }
 
     // 회원 조회

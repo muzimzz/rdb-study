@@ -5,6 +5,7 @@ import com.study.rdb_study.cart.CartRepository;
 import com.study.rdb_study.global.exception.BadRequestException;
 import com.study.rdb_study.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,9 +19,11 @@ public class MemberService {
     
     private final MemberRepository memberRepository;
     private final CartRepository cartRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public MemberResponse join(MemberRequest memberRequest) {
-        Member member = memberRepository.save(memberRequest.toEntity());
+        String encodedPassword = passwordEncoder.encode(memberRequest.getPassword());
+        Member member = memberRepository.save(memberRequest.toEntity(encodedPassword));
         cartRepository.save(Cart.builder()
                 .memberId(member.getMemberId())
                 .build());
@@ -42,10 +45,10 @@ public class MemberService {
     }
 
     public void updatePassword(Long id, String inputPassword, String newPassword) {
-        String originPassword = memberRepository.findPasswordById(id)
+        String password = memberRepository.findPasswordById(id)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 사용자"));
 
-        if (!originPassword.equals(inputPassword))
+        if (passwordEncoder.matches(inputPassword, password))
             throw new BadRequestException("잘못된 비밀번호");
 
         memberRepository.updatePassword(id, newPassword);
