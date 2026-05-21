@@ -106,7 +106,7 @@ public class CartItemRepository {
     public void addQuantity(Long cartItemId, int quantity) {
         String sql = """
                 update cart_items set quantity = quantity + ?
-                where cartitem_id = ?
+                where cart_item_id = ?
                 """;
 
         jdbcTemplate.update(sql, quantity, cartItemId);
