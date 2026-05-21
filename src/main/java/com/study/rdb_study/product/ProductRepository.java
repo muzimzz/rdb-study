@@ -1,6 +1,7 @@
 package com.study.rdb_study.product;
 
 import com.study.rdb_study.global.exception.BadRequestException;
+import com.study.rdb_study.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -43,7 +44,7 @@ public class ProductRepository {
         }, keyHolder);
 
         return findById(keyHolder.getKey().longValue())
-                .orElseThrow(() -> new IllegalArgumentException("상품 조회 실패"));
+                .orElseThrow(() -> new NotFoundException("상품 조회 실패"));
     }
 
     // AdminProductService
