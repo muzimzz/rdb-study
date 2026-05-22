@@ -47,4 +47,9 @@ public class AdminProductService {
         return adminProductRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 상품"));
     }
+
+    @Transactional(readOnly = true)
+    public List<AdminUnsoldProductResponse> findLongUnsoldProducts() {
+        return adminProductRepository.findLongUnsoldProducts();
+    }
 }

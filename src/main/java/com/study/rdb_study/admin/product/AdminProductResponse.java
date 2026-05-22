@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @AllArgsConstructor
 @Builder
@@ -19,6 +21,7 @@ public class AdminProductResponse {
     private int stockQuantity;
     private String description;
     private ProductStatus status;
+    private LocalDateTime createdAt;
 
     public static AdminProductResponse toDto(Product product) {
         return AdminProductResponse.builder()
@@ -29,6 +32,7 @@ public class AdminProductResponse {
                 .stockQuantity(product.getStockQuantity())
                 .description(product.getDescription())
                 .status(product.getStatus())
+                .createdAt(product.getCreatedAt())
                 .build();
     }
 }

@@ -12,7 +12,10 @@
 <div class="container">
     <div class="section-header">
         <h1 class="page-title" style="margin-bottom:0;">상품 관리</h1>
-        <a href="/admin/members.html" class="btn btn-secondary btn-sm">회원 관리</a>
+        <div style="display:flex; gap:0.5rem;">
+            <button class="btn btn-warning btn-sm" onclick="openUnsoldModal()">장기 미판매 상품</button>
+            <a href="/admin/members.html" class="btn btn-secondary btn-sm">회원 관리</a>
+        </div>
     </div>
     <div id="alert"></div>
 
@@ -70,6 +73,17 @@
                     <tr><td colspan="8" class="loading">불러오는 중...</td></tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<!-- 장기 미판매 상품 모달 -->
+<div class="modal-overlay" id="unsoldModal">
+    <div class="modal" style="max-width:700px; width:90%;">
+        <div class="modal-title">장기 미판매 상품 (30일 이상)</div>
+        <div id="unsoldContent"><div class="loading">불러오는 중...</div></div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" onclick="closeUnsoldModal()">닫기</button>
         </div>
     </div>
 </div>
@@ -230,6 +244,62 @@
             showAlert(data?.message || '처리에 실패했습니다.', 'danger');
         }
     }
+
+    async function openUnsoldModal() {
+        document.getElementById('unsoldModal').classList.add('open');
+        document.getElementById('unsoldContent').innerHTML = '<div class="loading">불러오는 중...</div>';
+
+        const res = await api('/admin/products/unsold');
+        if (!res || !res.ok) {
+            document.getElementById('unsoldContent').innerHTML = '<div class="empty">불러오기 실패</div>';
+            return;
+        }
+
+        const products = await res.json();
+        if (products.length === 0) {
+            document.getElementById('unsoldContent').innerHTML = '<div class="empty"><p>장기 미판매 상품이 없습니다.</p></div>';
+            return;
+        }
+
+        document.getElementById('unsoldContent').innerHTML = `
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>상품명</th>
+                            <th>카테고리</th>
+                            <th>가격</th>
+                            <th>재고</th>
+                            <th>마지막 주문일</th>
+                            <th>미판매 기간</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${products.map(p => `
+                            <tr>
+                                <td>${p.productId}</td>
+                                <td>${p.name}</td>
+                                <td>${categoryLabel(p.category)}</td>
+                                <td>${formatPrice(p.price)}</td>
+                                <td>${p.stockQuantity}</td>
+                                <td>${p.lastOrderDate ? formatDate(p.lastOrderDate) : '<span style="color:#94a3b8;">판매 기록 없음</span>'}</td>
+                                <td><span class="badge badge-danger">${p.daysUnsold != null ? p.daysUnsold + '일' : '-'}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    function closeUnsoldModal() {
+        document.getElementById('unsoldModal').classList.remove('open');
+    }
+
+    document.getElementById('unsoldModal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeUnsoldModal();
+    });
 
     function categoryLabel(category) {
         const map = { FOOD: '식품', ANIMAL: '동물', ETC: '기타' };

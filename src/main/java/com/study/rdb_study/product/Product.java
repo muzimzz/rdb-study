@@ -2,6 +2,8 @@ package com.study.rdb_study.product;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor
 public class Product {
@@ -12,9 +14,10 @@ public class Product {
     private int stockQuantity;
     private String description;
     private ProductStatus status;
+    private LocalDateTime createdAt;
 
     @Builder
-    public Product(Long productId, String name, ProductCategory category, int price, int stockQuantity, String description, ProductStatus status) {
+    public Product(Long productId, String name, ProductCategory category, int price, int stockQuantity, String description, ProductStatus status, LocalDateTime createdAt) {
         this.productId = productId;
         this.name = name;
         this.category = category;
@@ -22,5 +25,6 @@ public class Product {
         this.stockQuantity = stockQuantity;
         this.description = description;
         this.status = status;
+        this.createdAt = createdAt;
     }
 }

@@ -60,4 +60,9 @@ public class AdminProductController {
     public ResponseEntity<AdminProductResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(adminProductService.findById(id));
     }
+
+    @GetMapping("/unsold")
+    public ResponseEntity<List<AdminUnsoldProductResponse>> findLongUnsoldProducts() {
+        return ResponseEntity.ok(adminProductService.findLongUnsoldProducts());
+    }
 }

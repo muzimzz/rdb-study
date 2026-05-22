@@ -26,6 +26,8 @@ public class ProductRepository {
             .stockQuantity(rs.getInt("stock_quantity"))
             .description(rs.getString("description"))
             .status(ProductStatus.valueOf(rs.getString("status")))
+            .createdAt(rs.getTimestamp("created_at") != null
+                    ? rs.getTimestamp("created_at").toLocalDateTime() : null)
             .build();
 
     // AdminProductService
@@ -51,7 +53,7 @@ public class ProductRepository {
 
     // AdminProductService
     public Optional<Product> findById(Long id) {
-        String sql = "select product_id, name, category, price, stock_quantity, description, status from products where product_id = ? and status='ON_SALE'";
+        String sql = "select product_id, name, category, price, stock_quantity, description, status, created_at from products where product_id = ? and status='ON_SALE'";
 
         List<Product> result = jdbcTemplate.query(sql, productRowMapper, id);
         return result.stream().findFirst();
@@ -59,7 +61,7 @@ public class ProductRepository {
 
     // AdminProductService
     public List<Product> findAll() {
-        String sql = "select product_id, name, category, price, stock_quantity, description, status from products where status='ON_SALE'";
+        String sql = "select product_id, name, category, price, stock_quantity, description, status, created_at from products where status='ON_SALE'";
 
         return jdbcTemplate.query(sql, productRowMapper);
     }
