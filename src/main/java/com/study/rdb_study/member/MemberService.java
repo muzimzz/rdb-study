@@ -48,10 +48,10 @@ public class MemberService {
         String password = memberRepository.findPasswordById(id)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 사용자"));
 
-        if (passwordEncoder.matches(inputPassword, password))
+        if (!passwordEncoder.matches(inputPassword, password))
             throw new BadRequestException("잘못된 비밀번호");
 
-        memberRepository.updatePassword(id, newPassword);
+        memberRepository.updatePassword(id, passwordEncoder.encode(newPassword));
     }
 
     public void withdraw(Long id) {
