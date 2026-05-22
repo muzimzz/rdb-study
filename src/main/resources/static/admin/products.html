@@ -30,6 +30,14 @@
                     <input class="form-control" type="number" id="add-price" min="0" required>
                 </div>
                 <div class="form-group">
+                    <label>카테고리</label>
+                    <select class="form-control" id="add-category" required>
+                        <option value="FOOD">식품</option>
+                        <option value="ANIMAL">동물</option>
+                        <option value="ETC">기타</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label>재고</label>
                     <input class="form-control" type="number" id="add-stock" min="0" required>
                 </div>
@@ -50,6 +58,7 @@
                     <tr>
                         <th>ID</th>
                         <th>상품명</th>
+                        <th>카테고리</th>
                         <th>가격</th>
                         <th>재고</th>
                         <th>상태</th>
@@ -58,7 +67,7 @@
                     </tr>
                 </thead>
                 <tbody id="productTable">
-                    <tr><td colspan="7" class="loading">불러오는 중...</td></tr>
+                    <tr><td colspan="8" class="loading">불러오는 중...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -74,6 +83,14 @@
             <div class="form-group">
                 <label>상품명</label>
                 <input class="form-control" type="text" id="edit-name" required>
+            </div>
+            <div class="form-group">
+                <label>카테고리</label>
+                <select class="form-control" id="edit-category" required>
+                    <option value="FOOD">식품</option>
+                    <option value="ANIMAL">동물</option>
+                    <option value="ETC">기타</option>
+                </select>
             </div>
             <div class="form-group">
                 <label>가격</label>
@@ -108,7 +125,7 @@
         const tbody = document.getElementById('productTable');
 
         if (products.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="empty">등록된 상품이 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="empty">등록된 상품이 없습니다.</td></tr>';
             return;
         }
 
@@ -116,6 +133,7 @@
             <tr>
                 <td>${p.productId}</td>
                 <td>${p.name}</td>
+                <td>${categoryLabel(p.category)}</td>
                 <td>${formatPrice(p.price)}</td>
                 <td>${p.stockQuantity}</td>
                 <td>${p.status === 'ON_SALE'
@@ -142,6 +160,7 @@
             method: 'POST',
             json: {
                 name: document.getElementById('add-name').value,
+                category: document.getElementById('add-category').value,
                 price: parseInt(document.getElementById('add-price').value),
                 stockQuantity: parseInt(document.getElementById('add-stock').value),
                 description: document.getElementById('add-desc').value,
@@ -162,6 +181,7 @@
     function openEdit(product) {
         document.getElementById('edit-id').value = product.productId;
         document.getElementById('edit-name').value = product.name;
+        document.getElementById('edit-category').value = product.category;
         document.getElementById('edit-price').value = product.price;
         document.getElementById('edit-stock').value = product.stockQuantity;
         document.getElementById('edit-desc').value = product.description || '';
@@ -180,6 +200,7 @@
             method: 'PUT',
             json: {
                 name: document.getElementById('edit-name').value,
+                category: document.getElementById('edit-category').value,
                 price: parseInt(document.getElementById('edit-price').value),
                 stockQuantity: parseInt(document.getElementById('edit-stock').value),
                 description: document.getElementById('edit-desc').value,
@@ -208,6 +229,11 @@
             const data = await res?.json().catch(() => ({}));
             showAlert(data?.message || '처리에 실패했습니다.', 'danger');
         }
+    }
+
+    function categoryLabel(category) {
+        const map = { FOOD: '식품', ANIMAL: '동물', ETC: '기타' };
+        return map[category] || category;
     }
 
     function showAlert(msg, type) {

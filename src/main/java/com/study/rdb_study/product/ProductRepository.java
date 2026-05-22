@@ -21,6 +21,7 @@ public class ProductRepository {
     private final RowMapper<Product> productRowMapper = (rs, rowNum) -> Product.builder()
             .productId(rs.getLong("product_id"))
             .name(rs.getString("name"))
+            .category(ProductCategory.valueOf(rs.getString("category")))
             .price(rs.getInt("price"))
             .stockQuantity(rs.getInt("stock_quantity"))
             .description(rs.getString("description"))
@@ -29,17 +30,18 @@ public class ProductRepository {
 
     // AdminProductService
     public Product save(Product product) {
-        String sql = "insert into products (name, price, stock_quantity, description, status) values (?, ?, ?, ?, ?)";
+        String sql = "insert into products (name, category, price, stock_quantity, description, status) values (?, ?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(conn -> {
             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             pstmt.setString(1, product.getName());
-            pstmt.setInt(2, product.getPrice());
-            pstmt.setInt(3, product.getStockQuantity());
-            pstmt.setString(4, product.getDescription());
-            pstmt.setString(5, product.getStatus().name());
+            pstmt.setString(2, product.getCategory().name());
+            pstmt.setInt(3, product.getPrice());
+            pstmt.setInt(4, product.getStockQuantity());
+            pstmt.setString(5, product.getDescription());
+            pstmt.setString(6, product.getStatus().name());
             return pstmt;
         }, keyHolder);
 
@@ -49,7 +51,7 @@ public class ProductRepository {
 
     // AdminProductService
     public Optional<Product> findById(Long id) {
-        String sql = "select product_id, name, price, stock_quantity, description, status from products where product_id = ? and status='ON_SALE'";
+        String sql = "select product_id, name, category, price, stock_quantity, description, status from products where product_id = ? and status='ON_SALE'";
 
         List<Product> result = jdbcTemplate.query(sql, productRowMapper, id);
         return result.stream().findFirst();
@@ -57,7 +59,7 @@ public class ProductRepository {
 
     // AdminProductService
     public List<Product> findAll() {
-        String sql = "select product_id, name, price, stock_quantity, description, status from products where status='ON_SALE'";
+        String sql = "select product_id, name, category, price, stock_quantity, description, status from products where status='ON_SALE'";
 
         return jdbcTemplate.query(sql, productRowMapper);
     }
@@ -65,7 +67,7 @@ public class ProductRepository {
     // AdminProductService
     // Todo: JPA → DirtyChecking + @PreUpdate로 Entity Update 직전에 StockQuantity 확인 (LifeCycle Callback)
     public void update(Product product) {
-        String sql = "update products set name=?, price=?, stock_quantity=?, description=? where product_id=?";
+        String sql = "update products set name=?, category=?, price=?, stock_quantity=?, description=? where product_id=?";
         String soldOutSql = """
                 update products set status = 'SOLD_OUT'
                 where product_id = ? and status = 'ON_SALE' and stock_quantity = 0
@@ -75,7 +77,13 @@ public class ProductRepository {
                 where product_id = ? and status = 'SOLD_OUT' and stock_quantity > 0
                 """;
 
-        jdbcTemplate.update(sql, product.getName(), product.getPrice(), product.getStockQuantity(), product.getDescription(), product.getProductId());
+        jdbcTemplate.update(sql,
+                product.getName(),
+                product.getCategory().name(),
+                product.getPrice(),
+                product.getStockQuantity(),
+                product.getDescription(),
+                product.getProductId());
         jdbcTemplate.update(soldOutSql, product.getProductId());
         jdbcTemplate.update(onSaleSql, product.getProductId());
     }

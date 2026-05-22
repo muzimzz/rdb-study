@@ -10,6 +10,7 @@ import lombok.Getter;
 public class ProductResponse {
     private Long productId;
     private String name;
+    private ProductCategory category;
     private int price;
     private String description;
 
@@ -17,6 +18,7 @@ public class ProductResponse {
         return ProductResponse.builder()
                 .productId(product.getProductId())
                 .name(product.getName())
+                .category(product.getCategory())
                 .price(product.getPrice())
                 .description(product.getDescription())
                 .build();

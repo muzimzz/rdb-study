@@ -17,11 +17,11 @@ public class AdminProductService {
     private final AdminProductRepository adminProductRepository;
     private final ProductRepository productRepository;
 
-    public AdminProductResponse save(AdminProductRequest request) {
+    public AdminProductResponse save(AdminProductCreateRequest request) {
         return AdminProductResponse.toDto(productRepository.save(request.toEntity()));
     }
 
-    public void update(Long id, AdminProductRequest request) {
+    public void update(Long id, AdminProductCreateRequest request) {
         if (!adminProductRepository.existsById(id))
             throw new NotFoundException("존재하지 않는 상품");
         productRepository.update(request.toEntityWithId(id));

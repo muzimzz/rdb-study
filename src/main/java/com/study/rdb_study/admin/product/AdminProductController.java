@@ -18,7 +18,7 @@ public class AdminProductController {
     private final AdminProductService adminProductService;
 
     @PostMapping
-    public ResponseEntity<AdminProductResponse> save(@RequestBody AdminProductRequest request) {
+    public ResponseEntity<AdminProductResponse> save(@RequestBody AdminProductCreateRequest request) {
         AdminProductResponse response = adminProductService.save(request);
 
         URI location = ServletUriComponentsBuilder
@@ -35,7 +35,7 @@ public class AdminProductController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable Long id,
-                                       @RequestBody AdminProductRequest request) {
+                                       @RequestBody AdminProductCreateRequest request) {
         adminProductService.update(id, request);
 
         return ResponseEntity.noContent().build();
