@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상품 관리 - 관리자</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar" id="navbar"></nav>
+
+<div class="container">
+    <div class="section-header">
+        <h1 class="page-title" style="margin-bottom:0;">상품 관리</h1>
+        <a href="/admin/members.html" class="btn btn-secondary btn-sm">회원 관리</a>
+    </div>
+    <div id="alert"></div>
+
+    <!-- 상품 추가 폼 -->
+    <div class="card" style="margin-bottom:1.5rem;">
+        <h2 style="font-size:1rem; font-weight:600; margin-bottom:1rem;">새 상품 추가</h2>
+        <form id="addForm">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                <div class="form-group">
+                    <label>상품명</label>
+                    <input class="form-control" type="text" id="add-name" required>
+                </div>
+                <div class="form-group">
+                    <label>가격</label>
+                    <input class="form-control" type="number" id="add-price" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label>재고</label>
+                    <input class="form-control" type="number" id="add-stock" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label>설명</label>
+                    <input class="form-control" type="text" id="add-desc">
+                </div>
+            </div>
+            <button class="btn btn-primary" type="submit">상품 추가</button>
+        </form>
+    </div>
+
+    <!-- 상품 목록 -->
+    <div class="card">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>상품명</th>
+                        <th>가격</th>
+                        <th>재고</th>
+                        <th>상태</th>
+                        <th>설명</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+                <tbody id="productTable">
+                    <tr><td colspan="7" class="loading">불러오는 중...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 수정 모달 -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <div class="modal-title">상품 수정</div>
+        <form id="editForm">
+            <input type="hidden" id="edit-id">
+            <div class="form-group">
+                <label>상품명</label>
+                <input class="form-control" type="text" id="edit-name" required>
+            </div>
+            <div class="form-group">
+                <label>가격</label>
+                <input class="form-control" type="number" id="edit-price" min="0" required>
+            </div>
+            <div class="form-group">
+                <label>재고</label>
+                <input class="form-control" type="number" id="edit-stock" min="0" required>
+            </div>
+            <div class="form-group">
+                <label>설명</label>
+                <input class="form-control" type="text" id="edit-desc">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" onclick="closeModal()">취소</button>
+                <button class="btn btn-primary" type="submit">저장</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+    const member = requireAdmin();
+    renderNavbar('admin');
+
+    async function loadProducts() {
+        const res = await api('/admin/products');
+        if (!res || !res.ok) return;
+
+        const products = await res.json();
+        const tbody = document.getElementById('productTable');
+
+        if (products.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty">등록된 상품이 없습니다.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = products.map(p => `
+            <tr>
+                <td>${p.productId}</td>
+                <td>${p.name}</td>
+                <td>${formatPrice(p.price)}</td>
+                <td>${p.stockQuantity}</td>
+                <td>${p.status === 'ON_SALE'
+                    ? '<span class="badge badge-success">판매중</span>'
+                    : p.status === 'SOLD_OUT'
+                        ? '<span class="badge badge-warning">품절</span>'
+                        : '<span class="badge badge-danger">판매중단</span>'
+                }</td>
+                <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.description || '-'}</td>
+                <td>
+                    <div style="display:flex; gap:0.5rem;">
+                        <button class="btn btn-secondary btn-sm" onclick='openEdit(${JSON.stringify(p)})'>수정</button>
+                        <button class="btn btn-danger btn-sm" onclick="discontinue(${p.productId})">판매중단</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // 상품 추가
+    document.getElementById('addForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const res = await api('/admin/products', {
+            method: 'POST',
+            json: {
+                name: document.getElementById('add-name').value,
+                price: parseInt(document.getElementById('add-price').value),
+                stockQuantity: parseInt(document.getElementById('add-stock').value),
+                description: document.getElementById('add-desc').value,
+            },
+        });
+
+        if (res && res.status === 201) {
+            showAlert('상품이 추가됐습니다.', 'success');
+            document.getElementById('addForm').reset();
+            loadProducts();
+        } else {
+            const data = await res?.json().catch(() => ({}));
+            showAlert(data?.message || '추가에 실패했습니다.', 'danger');
+        }
+    });
+
+    // 수정 모달 열기
+    function openEdit(product) {
+        document.getElementById('edit-id').value = product.productId;
+        document.getElementById('edit-name').value = product.name;
+        document.getElementById('edit-price').value = product.price;
+        document.getElementById('edit-stock').value = product.stockQuantity;
+        document.getElementById('edit-desc').value = product.description || '';
+        document.getElementById('editModal').classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('editModal').classList.remove('open');
+    }
+
+    // 상품 수정
+    document.getElementById('editForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('edit-id').value;
+        const res = await api(`/admin/products/${id}`, {
+            method: 'PUT',
+            json: {
+                name: document.getElementById('edit-name').value,
+                price: parseInt(document.getElementById('edit-price').value),
+                stockQuantity: parseInt(document.getElementById('edit-stock').value),
+                description: document.getElementById('edit-desc').value,
+            },
+        });
+
+        if (res && res.ok) {
+            closeModal();
+            showAlert('수정됐습니다.', 'success');
+            loadProducts();
+        } else {
+            const data = await res?.json().catch(() => ({}));
+            showAlert(data?.message || '수정에 실패했습니다.', 'danger');
+        }
+    });
+
+    // 판매 중단 (soft delete)
+    async function discontinue(productId) {
+        if (!confirm('해당 상품을 판매 중단 처리하시겠습니까?')) return;
+
+        const res = await api(`/admin/products/${productId}`, { method: 'DELETE' });
+        if (res && res.ok) {
+            showAlert('판매 중단 처리됐습니다.', 'success');
+            loadProducts();
+        } else {
+            const data = await res?.json().catch(() => ({}));
+            showAlert(data?.message || '처리에 실패했습니다.', 'danger');
+        }
+    }
+
+    function showAlert(msg, type) {
+        const el = document.getElementById('alert');
+        el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+        setTimeout(() => el.innerHTML = '', 3000);
+    }
+
+    document.getElementById('editModal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeModal();
+    });
+
+    loadProducts();
+</script>
+</body>
+</html>

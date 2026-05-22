@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 - RDB Shop</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar" id="navbar"></nav>
+
+<div class="auth-wrapper">
+    <div class="auth-box">
+        <h1 class="auth-title">회원가입</h1>
+        <p class="auth-sub">RDB Shop에 오신 걸 환영합니다</p>
+
+        <div id="alert"></div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="name">이름</label>
+                <input class="form-control" type="text" id="name" placeholder="홍길동" required>
+            </div>
+            <div class="form-group">
+                <label for="email">이메일</label>
+                <input class="form-control" type="email" id="email" placeholder="email@example.com" required>
+            </div>
+            <div class="form-group">
+                <label for="password">비밀번호</label>
+                <input class="form-control" type="password" id="password" placeholder="8자 이상" required minlength="8">
+            </div>
+            <div class="form-group">
+                <label for="address">주소</label>
+                <input class="form-control" type="text" id="address" placeholder="서울시 강남구..." required>
+            </div>
+            <button class="btn btn-primary btn-full" type="submit" id="submitBtn">회원가입</button>
+        </form>
+
+        <div class="auth-footer">
+            이미 계정이 있으신가요? <a href="/login.html">로그인</a>
+        </div>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+    renderNavbar();
+
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        const alertEl = document.getElementById('alert');
+        alertEl.innerHTML = '';
+        btn.disabled = true;
+        btn.textContent = '처리 중...';
+
+        const body = {
+            name: document.getElementById('name').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            address: document.getElementById('address').value,
+        };
+
+        try {
+            const res = await fetch('/members', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+                credentials: 'same-origin',
+            });
+
+            if (res.status === 201) {
+                alertEl.innerHTML = `<div class="alert alert-success">회원가입이 완료됐습니다! 로그인 해주세요.</div>`;
+                setTimeout(() => location.href = '/login.html', 1500);
+            } else {
+                const data = await res.json().catch(() => ({}));
+                alertEl.innerHTML = `<div class="alert alert-danger">${data.message || '회원가입에 실패했습니다.'}</div>`;
+            }
+        } catch (err) {
+            alertEl.innerHTML = `<div class="alert alert-danger">서버 오류가 발생했습니다.</div>`;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '회원가입';
+        }
+    });
+</script>
+</body>
+</html>

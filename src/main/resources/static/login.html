@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - RDB Shop</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar" id="navbar"></nav>
+
+<div class="auth-wrapper">
+    <div class="auth-box">
+        <h1 class="auth-title">로그인</h1>
+        <p class="auth-sub">이메일과 비밀번호를 입력하세요</p>
+
+        <div id="alert"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">이메일</label>
+                <input class="form-control" type="email" id="email" name="email" placeholder="email@example.com" required>
+            </div>
+            <div class="form-group">
+                <label for="password">비밀번호</label>
+                <input class="form-control" type="password" id="password" name="password" placeholder="비밀번호" required>
+            </div>
+            <button class="btn btn-primary btn-full" type="submit" id="submitBtn">로그인</button>
+        </form>
+
+        <div class="auth-footer">
+            계정이 없으신가요? <a href="/register.html">회원가입</a>
+        </div>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+    renderNavbar();
+
+    // 이미 로그인된 경우 메인으로
+    if (Session.get()) location.href = '/index.html';
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        const alertEl = document.getElementById('alert');
+        alertEl.innerHTML = '';
+        btn.disabled = true;
+        btn.textContent = '로그인 중...';
+
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            // Spring Security formLogin은 application/x-www-form-urlencoded 필요
+            const res = await fetch('/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ email, password }),
+                credentials: 'same-origin',
+            });
+
+            if (res.ok) {
+                // 로그인 성공 → /auth/me 호출해서 member 정보 저장
+                const meRes = await fetch('/auth/me', { credentials: 'same-origin' });
+                if (meRes.ok) {
+                    const member = await meRes.json();
+                    Session.set(member);
+                    location.href = '/index.html';
+                }
+            } else {
+                const data = await res.json().catch(() => ({}));
+                const msg = data.message || '이메일 또는 비밀번호를 확인해주세요.';
+                alertEl.innerHTML = `<div class="alert alert-danger">${msg}</div>`;
+            }
+        } catch (err) {
+            alertEl.innerHTML = `<div class="alert alert-danger">서버 오류가 발생했습니다.</div>`;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '로그인';
+        }
+    });
+</script>
+</body>
+</html>

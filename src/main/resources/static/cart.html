@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>장바구니 - RDB Shop</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar" id="navbar"></nav>
+
+<div class="container">
+    <h1 class="page-title">장바구니</h1>
+    <div id="alert"></div>
+    <div class="card">
+        <div id="cartContent"><div class="loading">불러오는 중...</div></div>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+    const member = requireAuth();
+    renderNavbar('cart');
+
+    let cartId = null;
+
+    async function loadCart() {
+        const res = await api(`/carts?memberId=${member.memberId}`);
+        if (!res || !res.ok) return;
+
+        const cart = await res.json();
+        cartId = cart.cartId;
+        renderCart(cart.cartItems);
+    }
+
+    function renderCart(items) {
+        const el = document.getElementById('cartContent');
+        if (!items || items.length === 0) {
+            el.innerHTML = '<div class="empty"><p>장바구니가 비어있습니다.</p></div>';
+            return;
+        }
+
+        const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
+        el.innerHTML = `
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>상품명</th>
+                            <th>단가</th>
+                            <th>수량</th>
+                            <th>소계</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map(item => `
+                            <tr>
+                                <td>${item.productName}</td>
+                                <td>${formatPrice(item.price)}</td>
+                                <td>
+                                    <div style="display:flex; gap:0.5rem; align-items:center;">
+                                        <input class="form-control" type="number"
+                                            id="qty-${item.cartItemId}"
+                                            value="${item.quantity}" min="1" max="999"
+                                            style="width:70px;">
+                                        <button class="btn btn-secondary btn-sm"
+                                            onclick="updateQty(${item.cartItemId})">변경</button>
+                                    </div>
+                                </td>
+                                <td>${formatPrice(item.price * item.quantity)}</td>
+                                <td>
+                                    <button class="btn btn-danger btn-sm"
+                                        onclick="deleteItem(${item.cartItemId})">삭제</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div class="cart-total">
+                <span>합계</span>
+                <span>${formatPrice(total)}</span>
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:1rem; gap:0.75rem;">
+                <button class="btn btn-secondary" onclick="clearCart()">전체 삭제</button>
+                <button class="btn btn-primary" onclick="placeOrder()">주문하기</button>
+            </div>
+        `;
+    }
+
+    async function updateQty(cartItemId) {
+        const qty = parseInt(document.getElementById(`qty-${cartItemId}`).value);
+        if (qty < 1) { alert('수량은 1 이상이어야 합니다.'); return; }
+
+        const res = await api(`/cart-items/${cartItemId}`, {
+            method: 'PATCH',
+            json: { quantity: qty },
+        });
+        if (res && res.ok) {
+            showAlert('수량이 변경됐습니다.', 'success');
+            loadCart();
+        } else {
+            const data = await res?.json().catch(() => ({}));
+            showAlert(data?.message || '변경에 실패했습니다.', 'danger');
+        }
+    }
+
+    async function deleteItem(cartItemId) {
+        if (!confirm('삭제하시겠습니까?')) return;
+        const res = await api(`/cart-items/${cartItemId}`, { method: 'DELETE' });
+        if (res && res.ok) loadCart();
+    }
+
+    async function clearCart() {
+        if (!confirm('장바구니를 전체 비우시겠습니까?')) return;
+        const res = await api(`/cart-items?cartId=${cartId}`, { method: 'DELETE' });
+        if (res && res.ok) loadCart();
+    }
+
+    async function placeOrder() {
+        if (!confirm('주문하시겠습니까?')) return;
+
+        const res = await api('/orders', {
+            method: 'POST',
+            json: { memberId: member.memberId },
+        });
+
+        if (res && res.status === 201) {
+            const order = await res.json();
+            showAlert('주문이 완료됐습니다!', 'success');
+            setTimeout(() => location.href = '/orders.html', 1500);
+        } else {
+            const data = await res?.json().catch(() => ({}));
+            showAlert(data?.message || '주문에 실패했습니다.', 'danger');
+        }
+    }
+
+    function showAlert(msg, type) {
+        const el = document.getElementById('alert');
+        el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+        setTimeout(() => el.innerHTML = '', 3000);
+    }
+
+    loadCart();
+</script>
+</body>
+</html>

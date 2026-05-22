@@ -54,6 +54,14 @@ public class MemberRepository {
                 .orElseThrow(() -> new NotFoundException("고객 조회 실패"));
     }
 
+    // 로그인 후 현재 사용자 정보 조회용 (password 제외)
+    public Optional<Member> findByEmailPublic(String email) {
+        String sql = "select member_id, name, email, address, status, role, join_date from members where email=?";
+        return jdbcTemplate.query(sql, memberRowMapper, email)
+                .stream()
+                .findFirst();
+    }
+
     // Security
     public Optional<Member> findByEmail(String email) {
         String sql = "select email, password, status, role from members where email=?";

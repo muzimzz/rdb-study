@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RDB Shop</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar" id="navbar"></nav>
+
+<div class="container">
+    <h1 class="page-title">전체 상품</h1>
+    <div id="alert"></div>
+    <div id="productGrid" class="product-grid">
+        <div class="loading">상품을 불러오는 중...</div>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+    renderNavbar('home');
+    const member = Session.get();
+
+    async function loadProducts() {
+        const res = await fetch('/products', { credentials: 'same-origin' });
+        if (!res.ok) {
+            document.getElementById('productGrid').innerHTML = '<div class="empty"><p>상품을 불러올 수 없습니다.</p></div>';
+            return;
+        }
+
+        const products = await res.json();
+        const grid = document.getElementById('productGrid');
+
+        if (products.length === 0) {
+            grid.innerHTML = '<div class="empty"><p>등록된 상품이 없습니다.</p></div>';
+            return;
+        }
+
+        grid.innerHTML = products.map(p => `
+            <div class="product-card">
+                <div class="product-name">${p.name}</div>
+                <div class="product-price">${formatPrice(p.price)}</div>
+                <div class="product-desc">${p.description || ''}</div>
+                ${member ? `
+                    <div class="product-qty">
+                        <input class="form-control" type="number" id="qty-${p.productId}" value="1" min="1" max="999">
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="addToCart(${p.productId})">장바구니 담기</button>
+                ` : `
+                    <a href="/login.html" class="btn btn-secondary btn-sm">로그인 후 구매</a>
+                `}
+            </div>
+        `).join('');
+    }
+
+    async function addToCart(productId) {
+        if (!member) { location.href = '/login.html'; return; }
+
+        const qty = parseInt(document.getElementById(`qty-${productId}`).value);
+        if (qty < 1) { alert('수량을 1 이상 입력해주세요.'); return; }
+
+        const res = await fetch('/cart-items', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ memberId: member.memberId, productId, quantity: qty }),
+            credentials: 'same-origin',
+        });
+
+        const alertEl = document.getElementById('alert');
+        if (res.status === 201) {
+            alertEl.innerHTML = `<div class="alert alert-success">장바구니에 담겼습니다! <a href="/cart.html">장바구니 보기</a></div>`;
+            setTimeout(() => alertEl.innerHTML = '', 3000);
+        } else {
+            const data = await res.json().catch(() => ({}));
+            alertEl.innerHTML = `<div class="alert alert-danger">${data.message || '담기에 실패했습니다.'}</div>`;
+        }
+    }
+
+    loadProducts();
+</script>
+</body>
+</html>

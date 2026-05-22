@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 정보 - RDB Shop</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar" id="navbar"></nav>
+
+<div class="container">
+    <h1 class="page-title">내 정보</h1>
+    <div id="alert"></div>
+
+    <div class="card">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('info', this)">기본 정보</button>
+            <button class="tab-btn" onclick="switchTab('password', this)">비밀번호 변경</button>
+            <button class="tab-btn" onclick="switchTab('withdraw', this)">회원 탈퇴</button>
+        </div>
+
+        <!-- 기본 정보 탭 -->
+        <div class="tab-panel active" id="tab-info">
+            <div id="infoContent"><div class="loading">불러오는 중...</div></div>
+        </div>
+
+        <!-- 비밀번호 변경 탭 -->
+        <div class="tab-panel" id="tab-password">
+            <form id="passwordForm" style="max-width:400px;">
+                <div class="form-group">
+                    <label>현재 비밀번호</label>
+                    <input class="form-control" type="password" id="inputPassword" required>
+                </div>
+                <div class="form-group">
+                    <label>새 비밀번호</label>
+                    <input class="form-control" type="password" id="newPassword" required minlength="8">
+                </div>
+                <button class="btn btn-primary" type="submit">비밀번호 변경</button>
+            </form>
+        </div>
+
+        <!-- 회원 탈퇴 탭 -->
+        <div class="tab-panel" id="tab-withdraw">
+            <div class="alert alert-danger" style="margin-bottom:1.5rem;">
+                탈퇴 시 계정이 비활성화되며 복구할 수 없습니다.
+            </div>
+            <button class="btn btn-danger" onclick="withdraw()">회원 탈퇴</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+    const member = requireAuth();
+    renderNavbar('profile');
+
+    function switchTab(name, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${name}`).classList.add('active');
+    }
+
+    async function loadInfo() {
+        const res = await api(`/members/${member.memberId}`);
+        if (!res || !res.ok) return;
+
+        const m = await res.json();
+        document.getElementById('infoContent').innerHTML = `
+            <form id="infoForm" style="max-width:400px;">
+                <div class="form-group">
+                    <label>이름</label>
+                    <input class="form-control" type="text" id="name" value="${m.name}" required>
+                </div>
+                <div class="form-group">
+                    <label>이메일</label>
+                    <input class="form-control" type="email" id="email" value="${m.email}" required>
+                </div>
+                <div class="form-group">
+                    <label>주소</label>
+                    <input class="form-control" type="text" id="address" value="${m.address || ''}" required>
+                </div>
+                <div class="form-group">
+                    <label>가입일</label>
+                    <input class="form-control" type="text" value="${formatDate(m.joinDate)}" disabled>
+                </div>
+                <button class="btn btn-primary" type="submit">정보 수정</button>
+            </form>
+        `;
+
+        document.getElementById('infoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const res = await api(`/members/${member.memberId}`, {
+                method: 'PUT',
+                json: {
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    password: '',  // update()용 toEntity는 password 미사용
+                    address: document.getElementById('address').value,
+                },
+            });
+
+            if (res && res.ok) {
+                showAlert('정보가 수정됐습니다.', 'success');
+                // 세션 name 업데이트
+                const updated = { ...Session.get(), name: document.getElementById('name').value };
+                Session.set(updated);
+                renderNavbar('profile');
+            } else {
+                const data = await res?.json().catch(() => ({}));
+                showAlert(data?.message || '수정에 실패했습니다.', 'danger');
+            }
+        });
+    }
+
+    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const res = await api(`/members/${member.memberId}/password`, {
+            method: 'PATCH',
+            json: {
+                inputPassword: document.getElementById('inputPassword').value,
+                newPassword: document.getElementById('newPassword').value,
+            },
+        });
+
+        if (res && res.ok) {
+            showAlert('비밀번호가 변경됐습니다. 다시 로그인해주세요.', 'success');
+            setTimeout(() => logout(), 2000);
+        } else {
+            const data = await res?.json().catch(() => ({}));
+            showAlert(data?.message || '변경에 실패했습니다.', 'danger');
+        }
+    });
+
+    async function withdraw() {
+        if (!confirm('정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+
+        const res = await api(`/members/${member.memberId}/withdraw`, { method: 'PATCH' });
+        if (res && res.ok) {
+            alert('탈퇴가 완료됐습니다.');
+            Session.clear();
+            location.href = '/login.html';
+        } else {
+            const data = await res?.json().catch(() => ({}));
+            showAlert(data?.message || '탈퇴에 실패했습니다.', 'danger');
+        }
+    }
+
+    function showAlert(msg, type) {
+        const el = document.getElementById('alert');
+        el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+        setTimeout(() => el.innerHTML = '', 4000);
+    }
+
+    loadInfo();
+</script>
+</body>
+</html>

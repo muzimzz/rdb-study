@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원 관리 - 관리자</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar" id="navbar"></nav>
+
+<div class="container">
+    <div class="section-header">
+        <h1 class="page-title" style="margin-bottom:0;">회원 관리</h1>
+        <a href="/admin/products.html" class="btn btn-secondary btn-sm">상품 관리</a>
+    </div>
+    <div id="alert"></div>
+
+    <div class="card">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>이름</th>
+                        <th>이메일</th>
+                        <th>주소</th>
+                        <th>상태</th>
+                        <th>권한</th>
+                        <th>가입일</th>
+                        <th>주문수</th>
+                        <th>총구매액</th>
+                        <th>마지막주문</th>
+                    </tr>
+                </thead>
+                <tbody id="memberTable">
+                    <tr><td colspan="10" class="loading">불러오는 중...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+    const member = requireAdmin();
+    renderNavbar('admin');
+
+    async function loadMembers() {
+        const res = await api('/admin/members');
+        if (!res || !res.ok) return;
+
+        const members = await res.json();
+        const tbody = document.getElementById('memberTable');
+
+        if (members.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" class="empty">회원이 없습니다.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = members.map(m => `
+            <tr>
+                <td>${m.memberId}</td>
+                <td>${m.name}</td>
+                <td>${m.email}</td>
+                <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${m.address || '-'}</td>
+                <td>${m.status === 'ACTIVE'
+                    ? '<span class="badge badge-success">활성</span>'
+                    : '<span class="badge badge-danger">휴면</span>'
+                }</td>
+                <td>${m.role === 'ADMIN'
+                    ? '<span class="badge badge-warning">관리자</span>'
+                    : '<span class="badge badge-secondary">일반</span>'
+                }</td>
+                <td>${formatDate(m.joinDate)}</td>
+                <td style="text-align:center;">${m.totalOrderCount}</td>
+                <td>${formatPrice(m.totalPrice)}</td>
+                <td>${m.lastOrderDate ? formatDate(m.lastOrderDate) : '-'}</td>
+            </tr>
+        `).join('');
+    }
+
+    loadMembers();
+</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주문내역 - RDB Shop</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar" id="navbar"></nav>
+
+<div class="container">
+    <h1 class="page-title">주문내역</h1>
+    <div id="alert"></div>
+    <div id="orderList"><div class="loading">불러오는 중...</div></div>
+</div>
+
+<!-- 주문 상세 모달 -->
+<div class="modal-overlay" id="detailModal">
+    <div class="modal">
+        <div class="modal-title">주문 상세</div>
+        <div id="modalContent"></div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal()">닫기</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+    const member = requireAuth();
+    renderNavbar('orders');
+
+    async function loadOrders() {
+        const res = await api(`/orders?memberId=${member.memberId}`);
+        if (!res || !res.ok) return;
+
+        const orders = await res.json();
+        const el = document.getElementById('orderList');
+
+        if (orders.length === 0) {
+            el.innerHTML = '<div class="empty"><p>주문 내역이 없습니다.</p></div>';
+            return;
+        }
+
+        el.innerHTML = orders.map(o => `
+            <div class="order-card">
+                <div class="order-info">
+                    <div class="order-id">주문 #${o.orderId}</div>
+                    <div class="order-date">${formatDate(o.orderDate)}</div>
+                    <div class="order-product">${o.representativeProductName}</div>
+                </div>
+                <div class="order-actions">
+                    <div class="order-price">${formatPrice(o.totalPrice)}</div>
+                    ${statusBadge(o.status)}
+                    <button class="btn btn-secondary btn-sm" onclick="showDetail(${o.orderId})">상세보기</button>
+                    ${o.status === 'PENDING' ? `
+                        <button class="btn btn-danger btn-sm" onclick="cancelOrder(${o.orderId})">취소</button>
+                    ` : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function showDetail(orderId) {
+        const res = await api(`/orders/${orderId}?memberId=${member.memberId}`);
+        if (!res || !res.ok) return;
+
+        const order = await res.json();
+        document.getElementById('modalContent').innerHTML = `
+            <div style="margin-bottom:1rem;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                    <span style="color:#64748b; font-size:0.875rem;">주문번호</span>
+                    <span style="font-weight:600;">#${order.orderId}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                    <span style="color:#64748b; font-size:0.875rem;">주문일시</span>
+                    <span>${formatDate(order.orderDate)}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                    <span style="color:#64748b; font-size:0.875rem;">상태</span>
+                    ${statusBadge(order.status)}
+                </div>
+            </div>
+            <table style="width:100%; border-collapse:collapse; font-size:0.875rem; margin-bottom:1rem;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left; padding:0.5rem; border-bottom:1px solid #e2e8f0; color:#64748b;">상품명</th>
+                        <th style="text-align:right; padding:0.5rem; border-bottom:1px solid #e2e8f0; color:#64748b;">단가</th>
+                        <th style="text-align:center; padding:0.5rem; border-bottom:1px solid #e2e8f0; color:#64748b;">수량</th>
+                        <th style="text-align:right; padding:0.5rem; border-bottom:1px solid #e2e8f0; color:#64748b;">소계</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${order.orderItems.map(item => `
+                        <tr>
+                            <td style="padding:0.5rem; border-bottom:1px solid #f1f5f9;">${item.productName}</td>
+                            <td style="padding:0.5rem; border-bottom:1px solid #f1f5f9; text-align:right;">${formatPrice(item.price)}</td>
+                            <td style="padding:0.5rem; border-bottom:1px solid #f1f5f9; text-align:center;">${item.quantity}</td>
+                            <td style="padding:0.5rem; border-bottom:1px solid #f1f5f9; text-align:right;">${formatPrice(item.totalPrice)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            <div style="display:flex; justify-content:space-between; font-weight:700;">
+                <span>합계</span>
+                <span style="color:#3b82f6;">${formatPrice(order.totalPrice)}</span>
+            </div>
+        `;
+        document.getElementById('detailModal').classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('detailModal').classList.remove('open');
+    }
+
+    async function cancelOrder(orderId) {
+        if (!confirm('주문을 취소하시겠습니까?')) return;
+
+        const res = await api(`/orders/${orderId}/cancel`, { method: 'PATCH' });
+        if (res && res.ok) {
+            document.getElementById('alert').innerHTML = `<div class="alert alert-success">주문이 취소됐습니다.</div>`;
+            setTimeout(() => document.getElementById('alert').innerHTML = '', 3000);
+            loadOrders();
+        } else {
+            const data = await res?.json().catch(() => ({}));
+            document.getElementById('alert').innerHTML = `<div class="alert alert-danger">${data?.message || '취소에 실패했습니다.'}</div>`;
+        }
+    }
+
+    // 모달 외부 클릭 시 닫기
+    document.getElementById('detailModal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeModal();
+    });
+
+    loadOrders();
+</script>
+</body>
+</html>
