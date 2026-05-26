@@ -4,7 +4,6 @@ import com.study.rdb_study.global.exception.BadRequestException;
 import com.study.rdb_study.global.exception.ForbiddenException;
 import com.study.rdb_study.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

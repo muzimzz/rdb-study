@@ -1,6 +1,5 @@
 package com.study.rdb_study.review;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
