@@ -1,10 +1,12 @@
 package com.study.rdb_study.order;
 
+import com.study.rdb_study.member.userDetails.CustomUserDetails;
 import com.study.rdb_study.order.dto.OrderDetailResponse;
 import com.study.rdb_study.order.dto.OrderCreateRequest;
 import com.study.rdb_study.order.dto.OrderResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -18,8 +20,9 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<OrderDetailResponse> save(@RequestBody OrderCreateRequest orderCreateRequest) {
-        OrderDetailResponse response = orderService.save(orderCreateRequest);
+    public ResponseEntity<OrderDetailResponse> save(@RequestBody OrderCreateRequest orderCreateRequest,
+                                                    @AuthenticationPrincipal CustomUserDetails userDetails) {
+        OrderDetailResponse response = orderService.save(userDetails.getMemberId(), orderCreateRequest);
 
         return ResponseEntity
                 .created(URI.create("/orders/" + response.getOrderId()))
@@ -27,14 +30,14 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<List<OrderResponse>> findByMemberId(@RequestParam Long memberId) {
-        List<OrderResponse> response = orderService.findByMemberId(memberId);
+    public ResponseEntity<List<OrderResponse>> findByMemberId(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        List<OrderResponse> response = orderService.findByMemberId(userDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OrderDetailResponse> findById(@PathVariable Long id, @RequestParam Long memberId) {
-        return ResponseEntity.ok(orderService.findById(id, memberId));
+    public ResponseEntity<OrderDetailResponse> findById(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(orderService.findById(id, userDetails.getMemberId()));
     }
 
     // 관리자용
@@ -53,8 +56,9 @@ public class OrderController {
 //    }
 
     @PatchMapping("/{id}/cancel")
-    public ResponseEntity<Void> cancelOrder(@PathVariable Long id) {
-        orderService.cancelOrder(id);
+    public ResponseEntity<Void> cancelOrder(@PathVariable Long id,
+                                            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        orderService.cancelOrder(id, userDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 

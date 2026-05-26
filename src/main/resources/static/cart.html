@@ -25,7 +25,7 @@
     let cartId = null;
 
     async function loadCart() {
-        const res = await api(`/carts?memberId=${member.memberId}`);
+        const res = await api(`/carts`);
         if (!res || !res.ok) return;
 
         const cart = await res.json();
@@ -124,7 +124,7 @@
 
         const res = await api('/orders', {
             method: 'POST',
-            json: { memberId: member.memberId },
+            json: { },
         });
 
         if (res && res.status === 201) {

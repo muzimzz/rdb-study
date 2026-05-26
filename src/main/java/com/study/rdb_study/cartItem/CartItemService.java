@@ -17,12 +17,10 @@ public class CartItemService {
     private final CartItemRepository cartItemRepository;
     private final CartRepository cartRepository;
 
-    // 장바구니 조회는 Cart에서 하는 것이 적절
-    // public List<CartItemResponse> findByCartId(Long memberId) { }
 
     // 장바구니에 상품 추가
-    public void addItem(CartItemRequest request) {
-        Cart cart = cartRepository.findByMemberId(request.getMemberId())
+    public void addItem(Long memberId, CartItemRequest request) {
+        Cart cart = cartRepository.findByMemberId(memberId)
                         .orElseThrow(() -> new NotFoundException("존재하지 않는 장바구니"));
 
         Optional<CartItem> existing = cartItemRepository.findByCartIdAndProductId(cart.getCartId(), request.getProductId());

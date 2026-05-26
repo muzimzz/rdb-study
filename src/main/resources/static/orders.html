@@ -32,7 +32,7 @@
     renderNavbar('orders');
 
     async function loadOrders() {
-        const res = await api(`/orders?memberId=${member.memberId}`);
+        const res = await api(`/orders`);
         if (!res || !res.ok) return;
 
         const orders = await res.json();
@@ -63,7 +63,7 @@
     }
 
     async function showDetail(orderId) {
-        const res = await api(`/orders/${orderId}?memberId=${member.memberId}`);
+        const res = await api(`/orders/${orderId}`);
         if (!res || !res.ok) return;
 
         const order = await res.json();

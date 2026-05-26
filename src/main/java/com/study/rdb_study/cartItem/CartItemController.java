@@ -1,9 +1,11 @@
 package com.study.rdb_study.cartItem;
 
+import com.study.rdb_study.member.userDetails.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -15,8 +17,9 @@ public class CartItemController {
     private final CartItemService cartItemService;
 
     @PostMapping
-    public ResponseEntity<Void> addItem(@RequestBody CartItemRequest request) {
-        cartItemService.addItem(request);
+    public ResponseEntity<Void> addItem(@RequestBody CartItemRequest request,
+                                        @AuthenticationPrincipal CustomUserDetails userDetails) {
+        cartItemService.addItem(userDetails.getMemberId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

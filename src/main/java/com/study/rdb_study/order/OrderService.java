@@ -36,13 +36,13 @@ public class OrderService {
     private final CartItemRepository cartItemRepository;
 
     // 주문정보 저장, 주문상세 반환, order_items에 save, 장바구니 제거, 재고 차감
-    public OrderDetailResponse save(OrderCreateRequest orderCreateRequest) {
+    public OrderDetailResponse save(Long memberId, OrderCreateRequest orderCreateRequest) {
         // 고객 존재 여부 검증
-        memberRepository.findById(orderCreateRequest.getMemberId())
+        memberRepository.findById(memberId)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 고객"));
 
         // 장바구니 존재 여부 겁증
-        Cart cart = cartRepository.findByMemberId(orderCreateRequest.getMemberId())
+        Cart cart = cartRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 장바구니"));
 
         // 장바구니 비어있는지 검증
@@ -66,7 +66,7 @@ public class OrderService {
         }
 
         // 주문 저장
-        Order order = orderRepository.save(orderCreateRequest.toEntity());
+        Order order = orderRepository.save(orderCreateRequest.toEntity(memberId));
 
         // 주문 아이템 저장 + 응답(반환)용 dto 생성 + 재고 차감
         for (CartItem cartItem : cartItems) {
@@ -91,7 +91,6 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("주문 조회 실패"));
 
-        // Spring Security 도입하면 memberId직접 받지 않아도 됨
         if (!order.getMemberId().equals(memberId)) {
             throw new ForbiddenException("본인 주문만 조회 가능");
         }
@@ -132,11 +131,14 @@ public class OrderService {
 //        // orderRepository.update(orderUpdateRequest.toEntity(id));
 //    }
 
-    public void cancelOrder(Long id) {
+    public void cancelOrder(Long id, Long memberId) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 주문, orderId: " + id));
 
         // Security: 본인 삭제 검증 추가
+        if (!order.getMemberId().equals(memberId)) {
+            throw new ForbiddenException("본인의 주문만 취소 가능");
+        }
 
         if (order.getStatus() == OrderStatus.CANCELLED) {
             throw new BadRequestException("이미 취소된 주문, orderId: " + id);
