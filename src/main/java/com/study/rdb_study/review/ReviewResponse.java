@@ -26,7 +26,7 @@ public class ReviewResponse {
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private boolean isUpdated;  // (수정됨 표시, updateAt이 null이면 false)
+    private boolean isUpdated;  // (수정됨 표시, updatedAt이 null이면 false)
 
     public static ReviewResponse toDto(Review review) {
         return ReviewResponse.builder()
@@ -36,8 +36,8 @@ public class ReviewResponse {
                 .rating(review.getRating())
                 .content(review.getContent())
                 .createdAt(review.getCreatedAt())
-                .updateAt(review.getUpdateAt())
-                .isUpdated(review.getUpdateAt() != null)
+                .updatedAt(review.getUpdatedAt())
+                .isUpdated(review.getUpdatedAt() != null)
                 .build();
     }
 }

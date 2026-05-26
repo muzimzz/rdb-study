@@ -26,7 +26,7 @@ public class ReviewRepository {
             .rating(rs.getInt("rating"))
             .content(rs.getString("content"))
             .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
-            .updateAt(rs.getTimestamp("updated_at") != null
+            .updatedAt(rs.getTimestamp("updated_at") != null
                     ? rs.getTimestamp("updated_at").toLocalDateTime() : null)
             .build();
 
