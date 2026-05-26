@@ -7,7 +7,6 @@ import com.study.rdb_study.cartItem.CartItemRepository;
 import com.study.rdb_study.global.exception.BadRequestException;
 import com.study.rdb_study.global.exception.ForbiddenException;
 import com.study.rdb_study.global.exception.NotFoundException;
-import com.study.rdb_study.member.MemberRepository;
 import com.study.rdb_study.order.dto.OrderDetailResponse;
 import com.study.rdb_study.order.dto.OrderCreateRequest;
 import com.study.rdb_study.order.dto.OrderResponse;
@@ -31,15 +30,11 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
-    private final MemberRepository memberRepository;
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
 
     // 주문정보 저장, 주문상세 반환, order_items에 save, 장바구니 제거, 재고 차감
     public OrderDetailResponse save(Long memberId, OrderCreateRequest orderCreateRequest) {
-        // 고객 존재 여부 검증
-        memberRepository.findById(memberId)
-                .orElseThrow(() -> new NotFoundException("존재하지 않는 고객"));
 
         // 장바구니 존재 여부 겁증
         Cart cart = cartRepository.findByMemberId(memberId)
