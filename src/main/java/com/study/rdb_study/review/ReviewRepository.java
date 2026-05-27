@@ -1,5 +1,6 @@
 package com.study.rdb_study.review;
 
+import com.study.rdb_study.admin.review.AdminReviewResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -85,8 +86,30 @@ public class ReviewRepository {
     }
 
     // 관리자용 전체 조회
-    public List<Review> findAll() {
-        String sql = "select * from reviews order by created_at desc";
-        return jdbcTemplate.query(sql, reviewRowMapper);
+    public List<AdminReviewResponse> findAllWithDetails() {
+        String sql = """
+                select r.review_id,
+                m.name as member_name,
+                p.name as product_name,
+                r.rating,
+                r.content,
+                r.created_at,
+                r.updated_at
+                from reviews r
+                join members m on r.member_id = m.member_id
+                join products p on r.product_id = p.product_id
+                order by r.created_at desc
+                """;
+
+        return jdbcTemplate.query(sql,
+                (rs, rowNum) -> AdminReviewResponse.builder()
+                        .reviewId(rs.getLong("review_id"))
+                        .memberName(rs.getString("member_name"))
+                        .productName(rs.getString("product_name"))
+                        .rating(rs.getInt("rating"))
+                        .content(rs.getString("content"))
+                        .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
+                        .isUpdated(rs.getTimestamp("updated_at") != null)
+                        .build());
     }
 }

@@ -25,8 +25,8 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>회원 ID</th>
-                        <th>상품 ID</th>
+                        <th>작성자</th>
+                        <th>상품명</th>
                         <th>별점</th>
                         <th>내용</th>
                         <th>작성일</th>
@@ -66,8 +66,8 @@
         tbody.innerHTML = reviews.map(r => `
             <tr>
                 <td>${r.reviewId}</td>
-                <td>${r.memberId}</td>
-                <td>${r.productId}</td>
+                <td>${r.memberName}</td>
+                <td>${r.productName}</td>
                 <td style="color:#f59e0b; letter-spacing:2px;">${starDisplay(r.rating)}</td>
                 <td style="max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.content}">${r.content}</td>
                 <td>${formatDate(r.createdAt)}</td>
