@@ -52,4 +52,9 @@ public class AdminProductService {
     public List<AdminUnsoldProductResponse> findLongUnsoldProducts() {
         return adminProductRepository.findLongUnsoldProducts();
     }
+
+    @Transactional(readOnly = true)
+    public List<AdminProductResponse> findLowStockProducts() {
+        return adminProductRepository.findLowStockProducts();
+    }
 }

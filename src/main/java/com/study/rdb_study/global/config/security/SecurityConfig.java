@@ -78,6 +78,7 @@ public class SecurityConfig {
                         // 공개 API
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/products").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/reviews").permitAll()  // 상품별 리뷰 목록 비로그인 허용
                         .requestMatchers("/members").permitAll()  // POST 회원가입
                         // 관리자 API
                         .requestMatchers("/admin/**").hasRole("ADMIN")

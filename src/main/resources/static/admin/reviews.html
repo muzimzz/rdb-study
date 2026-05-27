@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리뷰 관리 - 관리자</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar" id="navbar"></nav>
+
+<div class="container">
+    <div class="section-header">
+        <h1 class="page-title" style="margin-bottom:0;">리뷰 관리</h1>
+        <div style="display:flex; gap:0.5rem;">
+            <a href="/admin/products.html" class="btn btn-secondary btn-sm">상품 관리</a>
+            <a href="/admin/members.html" class="btn btn-secondary btn-sm">회원 관리</a>
+        </div>
+    </div>
+    <div id="alert"></div>
+
+    <div class="card">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>회원 ID</th>
+                        <th>상품 ID</th>
+                        <th>별점</th>
+                        <th>내용</th>
+                        <th>작성일</th>
+                        <th>수정여부</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+                <tbody id="reviewTable">
+                    <tr><td colspan="8" class="loading">불러오는 중...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+    const member = requireAdmin();
+    renderNavbar('admin');
+
+    function starDisplay(rating) {
+        return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+    }
+
+    async function loadReviews() {
+        const res = await api('/admin/reviews');
+        if (!res || !res.ok) return;
+
+        const reviews = await res.json();
+        const tbody = document.getElementById('reviewTable');
+
+        if (reviews.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="empty">등록된 리뷰가 없습니다.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = reviews.map(r => `
+            <tr>
+                <td>${r.reviewId}</td>
+                <td>${r.memberId}</td>
+                <td>${r.productId}</td>
+                <td style="color:#f59e0b; letter-spacing:2px;">${starDisplay(r.rating)}</td>
+                <td style="max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.content}">${r.content}</td>
+                <td>${formatDate(r.createdAt)}</td>
+                <td>${r.updated ? '<span class="badge badge-warning">수정됨</span>' : '<span class="badge badge-secondary">-</span>'}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm" onclick="deleteReview(${r.reviewId})">삭제</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function deleteReview(reviewId) {
+        if (!confirm('해당 리뷰를 삭제하시겠습니까?')) return;
+
+        const res = await api(`/admin/reviews/${reviewId}`, { method: 'DELETE' });
+        if (res && res.ok) {
+            showAlert('리뷰가 삭제됐습니다.', 'success');
+            loadReviews();
+        } else {
+            const data = await res?.json().catch(() => ({}));
+            showAlert(data?.message || '삭제에 실패했습니다.', 'danger');
+        }
+    }
+
+    function showAlert(msg, type) {
+        const el = document.getElementById('alert');
+        el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+        setTimeout(() => el.innerHTML = '', 3000);
+    }
+
+    loadReviews();
+</script>
+</body>
+</html>

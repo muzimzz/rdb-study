@@ -65,4 +65,9 @@ public class AdminProductController {
     public ResponseEntity<List<AdminUnsoldProductResponse>> findLongUnsoldProducts() {
         return ResponseEntity.ok(adminProductService.findLongUnsoldProducts());
     }
+
+    @GetMapping("/low-stock")
+    public ResponseEntity<List<AdminProductResponse>> findLowStockProducts() {
+        return ResponseEntity.ok(adminProductService.findLowStockProducts());
+    }
 }

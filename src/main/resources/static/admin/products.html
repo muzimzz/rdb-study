@@ -13,8 +13,10 @@
     <div class="section-header">
         <h1 class="page-title" style="margin-bottom:0;">상품 관리</h1>
         <div style="display:flex; gap:0.5rem;">
+            <button class="btn btn-danger btn-sm" onclick="openLowStockModal()">품절임박 상품</button>
             <button class="btn btn-warning btn-sm" onclick="openUnsoldModal()">장기 미판매 상품</button>
             <a href="/admin/members.html" class="btn btn-secondary btn-sm">회원 관리</a>
+            <a href="/admin/reviews.html" class="btn btn-secondary btn-sm">리뷰 관리</a>
         </div>
     </div>
     <div id="alert"></div>
@@ -73,6 +75,17 @@
                     <tr><td colspan="8" class="loading">불러오는 중...</td></tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<!-- 품절임박 모달 (재고 5개 미만) -->
+<div class="modal-overlay" id="lowStockModal">
+    <div class="modal" style="max-width:700px; width:90%;">
+        <div class="modal-title">품절임박 상품 (재고 5개 미만)</div>
+        <div id="lowStockContent"><div class="loading">불러오는 중...</div></div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" onclick="closeLowStockModal()">닫기</button>
         </div>
     </div>
 </div>
@@ -244,6 +257,65 @@
             showAlert(data?.message || '처리에 실패했습니다.', 'danger');
         }
     }
+
+    async function openLowStockModal() {
+        document.getElementById('lowStockModal').classList.add('open');
+        document.getElementById('lowStockContent').innerHTML = '<div class="loading">불러오는 중...</div>';
+
+        const res = await api('/admin/products/low-stock');
+        if (!res || !res.ok) {
+            document.getElementById('lowStockContent').innerHTML = '<div class="empty">불러오기 실패</div>';
+            return;
+        }
+
+        const products = await res.json();
+        if (products.length === 0) {
+            document.getElementById('lowStockContent').innerHTML = '<div class="empty"><p>품절임박 상품이 없습니다.</p></div>';
+            return;
+        }
+
+        document.getElementById('lowStockContent').innerHTML = `
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>상품명</th>
+                            <th>카테고리</th>
+                            <th>가격</th>
+                            <th>재고</th>
+                            <th>상태</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${products.map(p => `
+                            <tr>
+                                <td>${p.productId}</td>
+                                <td>${p.name}</td>
+                                <td>${categoryLabel(p.category)}</td>
+                                <td>${formatPrice(p.price)}</td>
+                                <td><span class="badge badge-danger">${p.stockQuantity}개</span></td>
+                                <td>${p.status === 'ON_SALE'
+                                    ? '<span class="badge badge-success">판매중</span>'
+                                    : p.status === 'SOLD_OUT'
+                                        ? '<span class="badge badge-warning">품절</span>'
+                                        : '<span class="badge badge-danger">판매중단</span>'
+                                }</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    function closeLowStockModal() {
+        document.getElementById('lowStockModal').classList.remove('open');
+    }
+
+    document.getElementById('lowStockModal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeLowStockModal();
+    });
 
     async function openUnsoldModal() {
         document.getElementById('unsoldModal').classList.add('open');

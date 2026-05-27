@@ -28,6 +28,7 @@ public class MemberRepository {
             .build();
 
     private final RowMapper<Member> memberRowMapperWithPassword = (rs, rowNum) -> Member.builder()
+            .memberId(rs.getLong("member_id"))  // CustomUserDetails에 넘겨야 하므로 추가
             .email(rs.getString("email"))
             .password(rs.getString("password"))
             .status(MemberStatus.valueOf(rs.getString("status")))
@@ -64,7 +65,7 @@ public class MemberRepository {
 
     // Security
     public Optional<Member> findByEmail(String email) {
-        String sql = "select email, password, status, role from members where email=?";
+        String sql = "select member_id, email, password, status, role from members where email=?";
 
         return jdbcTemplate.query(sql, memberRowMapperWithPassword, email)
                 .stream()

@@ -16,6 +16,7 @@
     <div class="card">
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('info', this)">기본 정보</button>
+            <button class="tab-btn" onclick="switchTab('reviews', this)">내 리뷰</button>
             <button class="tab-btn" onclick="switchTab('password', this)">비밀번호 변경</button>
             <button class="tab-btn" onclick="switchTab('withdraw', this)">회원 탈퇴</button>
         </div>
@@ -23,6 +24,11 @@
         <!-- 기본 정보 탭 -->
         <div class="tab-panel active" id="tab-info">
             <div id="infoContent"><div class="loading">불러오는 중...</div></div>
+        </div>
+
+        <!-- 내 리뷰 탭 -->
+        <div class="tab-panel" id="tab-reviews">
+            <div id="reviewContent"><div class="loading">불러오는 중...</div></div>
         </div>
 
         <!-- 비밀번호 변경 탭 -->
@@ -50,6 +56,35 @@
     </div>
 </div>
 
+<!-- 리뷰 수정 모달 -->
+<div class="modal-overlay" id="editReviewModal">
+    <div class="modal" style="max-width:480px; width:90%;">
+        <div class="modal-title">리뷰 수정</div>
+        <form id="editReviewForm">
+            <input type="hidden" id="editReviewId">
+            <div class="form-group">
+                <label>별점</label>
+                <div id="editStarInput" style="display:flex; gap:0.25rem; font-size:1.5rem; cursor:pointer;">
+                    <span data-star="1">☆</span>
+                    <span data-star="2">☆</span>
+                    <span data-star="3">☆</span>
+                    <span data-star="4">☆</span>
+                    <span data-star="5">☆</span>
+                </div>
+                <input type="hidden" id="editReviewRating" value="0">
+            </div>
+            <div class="form-group">
+                <label>내용</label>
+                <textarea class="form-control" id="editReviewContent" rows="4" required></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" onclick="closeEditModal()">취소</button>
+                <button class="btn btn-primary" type="submit">저장</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script src="/js/api.js"></script>
 <script>
     const member = requireAuth();
@@ -60,8 +95,12 @@
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById(`tab-${name}`).classList.add('active');
+
+        // 리뷰 탭 클릭 시 로드
+        if (name === 'reviews') loadMyReviews();
     }
 
+    // ── 기본 정보 ────────────────────────────────────────────────
     async function loadInfo() {
         const res = await api(`/members/${member.memberId}`);
         if (!res || !res.ok) return;
@@ -96,14 +135,13 @@
                 json: {
                     name: document.getElementById('name').value,
                     email: document.getElementById('email').value,
-                    password: '',  // update()용 toEntity는 password 미사용
+                    password: '',
                     address: document.getElementById('address').value,
                 },
             });
 
             if (res && res.ok) {
                 showAlert('정보가 수정됐습니다.', 'success');
-                // 세션 name 업데이트
                 const updated = { ...Session.get(), name: document.getElementById('name').value };
                 Session.set(updated);
                 renderNavbar('profile');
@@ -114,6 +152,147 @@
         });
     }
 
+    // ── 내 리뷰 목록 ─────────────────────────────────────────────
+    async function loadMyReviews() {
+        document.getElementById('reviewContent').innerHTML = '<div class="loading">불러오는 중...</div>';
+
+        const res = await api('/reviews/me');
+        if (!res || !res.ok) return;
+
+        const reviews = await res.json();
+
+        if (reviews.length === 0) {
+            document.getElementById('reviewContent').innerHTML = '<div class="empty" style="padding:2rem 0; color:#94a3b8;">작성한 리뷰가 없습니다.</div>';
+            return;
+        }
+
+        document.getElementById('reviewContent').innerHTML = `
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>상품 ID</th>
+                            <th>별점</th>
+                            <th>내용</th>
+                            <th>작성일</th>
+                            <th>수정여부</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${reviews.map(r => {
+                            // 작성 후 3일 이내면 수정 가능
+                            const created = Array.isArray(r.createdAt)
+                                ? new Date(r.createdAt[0], r.createdAt[1]-1, r.createdAt[2], r.createdAt[3]||0, r.createdAt[4]||0)
+                                : new Date(r.createdAt);
+                            const canEdit = (Date.now() - created.getTime()) < 3 * 24 * 60 * 60 * 1000;
+
+                            return `
+                                <tr>
+                                    <td>${r.productId}</td>
+                                    <td style="color:#f59e0b; letter-spacing:2px;">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</td>
+                                    <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.content}">${r.content}</td>
+                                    <td>${formatDate(r.createdAt)}</td>
+                                    <td>${r.updated ? '<span class="badge badge-warning">수정됨</span>' : '<span class="badge badge-secondary">-</span>'}</td>
+                                    <td>
+                                        <div style="display:flex; gap:0.5rem;">
+                                            ${canEdit
+                                                ? `<button class="btn btn-secondary btn-sm" onclick='openEditModal(${JSON.stringify(r)})'>수정</button>`
+                                                : `<button class="btn btn-secondary btn-sm" disabled title="작성 후 3일이 지난 리뷰는 수정할 수 없습니다.">수정불가</button>`
+                                            }
+                                            <button class="btn btn-danger btn-sm" onclick="deleteMyReview(${r.reviewId})">삭제</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    async function deleteMyReview(reviewId) {
+        if (!confirm('리뷰를 삭제하시겠습니까?')) return;
+
+        const res = await api(`/reviews/${reviewId}`, { method: 'DELETE' });
+        if (res && res.ok) {
+            showAlert('리뷰가 삭제됐습니다.', 'success');
+            loadMyReviews();
+        } else {
+            const data = await res?.json().catch(() => ({}));
+            showAlert(data?.message || '삭제에 실패했습니다.', 'danger');
+        }
+    }
+
+    // ── 리뷰 수정 모달 ──────────────────────────────────────────
+    function openEditModal(review) {
+        document.getElementById('editReviewId').value = review.reviewId;
+        document.getElementById('editReviewContent').value = review.content;
+        setEditStars(review.rating);
+        document.getElementById('editReviewModal').classList.add('open');
+    }
+
+    function closeEditModal() {
+        document.getElementById('editReviewModal').classList.remove('open');
+    }
+
+    document.getElementById('editReviewModal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeEditModal();
+    });
+
+    function setEditStars(selected) {
+        document.getElementById('editReviewRating').value = selected;
+        document.querySelectorAll('#editStarInput span').forEach((el, idx) => {
+            el.textContent = idx < selected ? '★' : '☆';
+        });
+    }
+
+    document.querySelectorAll('#editStarInput span').forEach(el => {
+        el.addEventListener('click', () => {
+            setEditStars(parseInt(el.dataset.star));
+        });
+        el.addEventListener('mouseover', () => {
+            const val = parseInt(el.dataset.star);
+            document.querySelectorAll('#editStarInput span').forEach((s, idx) => {
+                s.textContent = idx < val ? '★' : '☆';
+            });
+        });
+        el.addEventListener('mouseout', () => {
+            const current = parseInt(document.getElementById('editReviewRating').value);
+            document.querySelectorAll('#editStarInput span').forEach((s, idx) => {
+                s.textContent = idx < current ? '★' : '☆';
+            });
+        });
+    });
+
+    document.getElementById('editReviewForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const rating = parseInt(document.getElementById('editReviewRating').value);
+        if (rating === 0) { alert('별점을 선택해주세요.'); return; }
+
+        const reviewId = document.getElementById('editReviewId').value;
+        const res = await api(`/reviews/${reviewId}`, {
+            method: 'PUT',
+            json: {
+                rating,
+                content: document.getElementById('editReviewContent').value,
+                productId: 0,  // 수정 시 productId는 서버에서 무시 (id로 찾음)
+            },
+        });
+
+        if (res && res.ok) {
+            closeEditModal();
+            showAlert('리뷰가 수정됐습니다.', 'success');
+            loadMyReviews();
+        } else {
+            const data = await res?.json().catch(() => ({}));
+            showAlert(data?.message || '수정에 실패했습니다.', 'danger');
+        }
+    });
+
+    // ── 비밀번호 변경 ────────────────────────────────────────────
     document.getElementById('passwordForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const res = await api(`/members/${member.memberId}/password`, {
@@ -133,6 +312,7 @@
         }
     });
 
+    // ── 회원 탈퇴 ────────────────────────────────────────────────
     async function withdraw() {
         if (!confirm('정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
 

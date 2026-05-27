@@ -83,4 +83,10 @@ public class ReviewRepository {
         String sql = "delete from reviews where review_id = ?";
         jdbcTemplate.update(sql, id);
     }
+
+    // 관리자용 전체 조회
+    public List<Review> findAll() {
+        String sql = "select * from reviews order by created_at desc";
+        return jdbcTemplate.query(sql, reviewRowMapper);
+    }
 }
