@@ -19,6 +19,10 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
 
     public ReviewResponse save(Long memberId, ReviewRequest request) {
+
+        if (reviewRepository.existsByMemberIdAndProductId(memberId, request.getProductId()))
+            throw new BadRequestException("리뷰는 한 번만 작성 가능");
+
         return ReviewResponse.toDto(reviewRepository.save(request.toEntity(memberId)));
     }
 

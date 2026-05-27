@@ -46,6 +46,13 @@ public class ReviewRepository {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 리뷰"));
     }
 
+    // 같은 고객의 같은 상품 중복 리뷰 작성 방지를 위한 검증 로직
+    public boolean existsByMemberIdAndProductId(Long memberId, Long productId) {
+        String sql = "select count(*) from reviews where member_id=? and product_id=?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, memberId, productId);
+        return count != null && count > 0;
+    }
+
     // 리뷰 자세히 보기 (선택사항)
     public Optional<Review> findById(Long id) {
         String sql = "select * from reviews where review_id = ?";
