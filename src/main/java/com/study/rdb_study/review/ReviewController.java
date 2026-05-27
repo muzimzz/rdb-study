@@ -32,8 +32,7 @@ public class ReviewController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<List<ReviewResponse>> findByMemberId(@PathVariable Long id,
-                                                              @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<List<ReviewResponse>> findByMemberId(@AuthenticationPrincipal CustomUserDetails userDetails) {
         List<ReviewResponse> responseList = reviewService.findByMemberId(userDetails.getMemberId());
         return ResponseEntity.ok(responseList);
     }
