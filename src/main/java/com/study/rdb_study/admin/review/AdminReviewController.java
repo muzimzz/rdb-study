@@ -1,11 +1,11 @@
 package com.study.rdb_study.admin.review;
 
+import com.study.rdb_study.review.ReviewResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/admin/reviews")
@@ -13,6 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminReviewController {
 
     private final AdminReviewService adminReviewService;
+
+    @GetMapping
+    public ResponseEntity<List<ReviewResponse>> findAll() {
+        return ResponseEntity.ok(adminReviewService.findAll());
+    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
