@@ -3,6 +3,7 @@ package com.study.rdb_study.review;
 import com.study.rdb_study.global.exception.BadRequestException;
 import com.study.rdb_study.global.exception.ForbiddenException;
 import com.study.rdb_study.global.exception.NotFoundException;
+import com.study.rdb_study.orderItem.OrderItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,8 +18,13 @@ import java.util.stream.Collectors;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final OrderItemRepository orderItemRepository;
 
     public ReviewResponse save(Long memberId, ReviewRequest request) {
+
+        if (!orderItemRepository.existsByMemberIdAndProductId(memberId, request.getProductId())) {
+            throw new BadRequestException("구매한 상품에만 리뷰 작성 가능");
+        }
 
         if (reviewRepository.existsByMemberIdAndProductId(memberId, request.getProductId()))
             throw new BadRequestException("리뷰는 한 번만 작성 가능");

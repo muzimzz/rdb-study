@@ -1,5 +1,6 @@
 package com.study.rdb_study.orderItem;
 
+import com.study.rdb_study.order.OrderStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -33,6 +34,19 @@ public class OrderItemRepository {
         jdbcTemplate.update(sql, orderItem.getOrderId(), orderItem.getProductId(), orderItem.getQuantity());
 
         return orderItem;
+    }
+
+    public boolean existsByMemberIdAndProductId(Long memberId, Long productId) {
+        String sql = """
+                select count(*) from order_items oi
+                join orders o on oi.order_id=o.order_id
+                where o.member_id = ? 
+                  and oi.product_id = ?
+                  and o.status != ?
+                """;
+
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, memberId, productId, OrderStatus.CANCELLED.name());
+        return count != null && count > 0;
     }
 
     // 주문 상세 조회용(JOIN)
