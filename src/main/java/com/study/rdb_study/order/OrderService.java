@@ -4,6 +4,10 @@ import com.study.rdb_study.cart.Cart;
 import com.study.rdb_study.cart.CartRepository;
 import com.study.rdb_study.cartItem.CartItem;
 import com.study.rdb_study.cartItem.CartItemRepository;
+import com.study.rdb_study.coupon.Coupon;
+import com.study.rdb_study.coupon.CouponRepository;
+import com.study.rdb_study.coupon.MemberCoupon;
+import com.study.rdb_study.coupon.MemberCouponRepository;
 import com.study.rdb_study.global.exception.BadRequestException;
 import com.study.rdb_study.global.exception.ForbiddenException;
 import com.study.rdb_study.global.exception.NotFoundException;
@@ -19,7 +23,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +39,8 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
+    private final CouponRepository couponRepository;
+    private final MemberCouponRepository memberCouponRepository;
 
     // 주문정보 저장, 주문상세 반환, order_items에 save, 장바구니 제거, 재고 차감
     public OrderDetailResponse save(Long memberId, OrderCreateRequest orderCreateRequest) {
@@ -47,10 +56,12 @@ public class OrderService {
         }
 
         // 장바구니 각 아이템 존재 여부, 주문 개수 여부, 재고 부족 검증
+        Map<Long, Product> productMap = new HashMap<>();
         for (CartItem cartItem : cartItems) {
             Product product = productRepository.findById(cartItem.getProductId())
                     .orElseThrow(() -> new NotFoundException("존재하지 않는 상품ID: " + cartItem.getProductId()));
 
+            productMap.put(cartItem.getProductId(), product);
             if (cartItem.getQuantity() <= 0) {
                 throw new BadRequestException("주문 개수는 1 이상이어야 합니다.");
             }
@@ -60,8 +71,35 @@ public class OrderService {
             }
         }
 
+        int totalDiscountAmount = 0;
+        if (orderCreateRequest.getMemberCouponId() != null) {
+            MemberCoupon memberCoupon = memberCouponRepository.findById(orderCreateRequest.getMemberCouponId())
+                    .orElseThrow(() -> new NotFoundException("존재하지 않는 쿠폰"));
+
+            if (memberCoupon.isUsed())
+                throw new BadRequestException("이미 사용한 쿠폰");
+
+            Coupon coupon = couponRepository.findById(memberCoupon.getCouponId())
+                    .orElseThrow(() -> new NotFoundException("존재하지 않는 쿠폰"));
+
+            if (coupon.getExpiredAt().isBefore(LocalDateTime.now()))
+                throw new BadRequestException("만료된 쿠폰");
+
+            int totalPrice = 0;
+            for (CartItem cartItem : cartItems) {
+                Product product = productMap.get(cartItem.getProductId());
+                totalPrice += product.getPrice() * cartItem.getQuantity();
+            }
+
+            if (totalPrice < coupon.getMinOrderAmount())
+                throw new BadRequestException("최소 주문 금액 미달");
+
+            memberCouponRepository.markAsUsed(memberCoupon.getMemberCouponId());
+            totalDiscountAmount = coupon.calculateDiscountAmount(totalPrice);
+        }
+
         // 주문 저장
-        Order order = orderRepository.save(orderCreateRequest.toEntity(memberId));
+        Order order = orderRepository.save(orderCreateRequest.toEntity(memberId, totalDiscountAmount));
 
         // 주문 아이템 저장 + 응답(반환)용 dto 생성 + 재고 차감
         for (CartItem cartItem : cartItems) {
@@ -146,6 +184,9 @@ public class OrderService {
         for (OrderItem orderItem : orderItems) {
             productRepository.increaseStock(orderItem.getProductId(), orderItem.getQuantity());
         }
+
+        if (order.getMemberCouponId() != null)
+            memberCouponRepository.markAsUnused(order.getMemberCouponId());
 
         orderRepository.updateStatus(id, OrderStatus.CANCELLED);
     }
