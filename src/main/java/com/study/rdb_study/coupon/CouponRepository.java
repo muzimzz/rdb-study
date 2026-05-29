@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.Optional;
 
 @Repository
@@ -46,9 +48,14 @@ public class CouponRepository {
             pstmt.setString(2, coupon.getCode());
             pstmt.setInt(3, coupon.getDiscountRate());
             pstmt.setInt(4, coupon.getMinOrderAmount());
-            pstmt.setInt(5, coupon.getMaxDiscountAmount());
-            pstmt.setInt(6, coupon.getMaxIssueCount());
-            pstmt.setTime(7, coupon.getExpiredAt());
+            // pstmt.setObject(5, coupon.getMaxDiscountAmount());
+            if (coupon.getMaxDiscountAmount() == null) {
+                pstmt.setNull(5, Types.INTEGER);
+            } else pstmt.setInt(5, coupon.getMaxDiscountAmount());
+            if (coupon.getMaxIssueCount() == null) {
+                pstmt.setNull(6, Types.INTEGER);
+            } else pstmt.setInt(6, coupon.getMaxIssueCount());
+            pstmt.setTimestamp(7, Timestamp.valueOf(coupon.getExpiredAt()));
 
             return pstmt;
         }, keyHolder);
@@ -58,8 +65,9 @@ public class CouponRepository {
     }
 
     public Optional<Coupon> findById(Long couponId) {
-        // TODO
-        return Optional.empty();
+        String sql = "select * from coupons where coupon_id = ?";
+        return jdbcTemplate.query(sql, couponRowMapper, couponId)
+                .stream().findFirst();
     }
 
     // 코드 입력 방식 등록 시 사용
