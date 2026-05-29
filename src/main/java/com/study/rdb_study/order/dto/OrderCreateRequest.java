@@ -12,10 +12,14 @@ import java.util.List;
 @NoArgsConstructor
 public class OrderCreateRequest {
 
-    public Order toEntity(Long id) {
+    private Long memberCouponId;  // 사용할 쿠폰 발급 ID, 없으면 null
+
+    public Order toEntity(Long memberId) {
         return Order.builder()
-                .memberId(id)
+                .memberId(memberId)
                 .status(OrderStatus.PENDING) // 주문 생성 시 무조건 PENDING으로 고정
+                .memberCouponId(memberCouponId)
+                .discountAmount(0)  // 실제 할인 금액은 OrderService에서 계산 후 별도 저장
                 .build();
     }
 
