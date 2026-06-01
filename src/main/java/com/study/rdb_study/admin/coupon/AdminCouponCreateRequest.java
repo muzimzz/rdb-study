@@ -4,16 +4,29 @@ import com.study.rdb_study.coupon.Coupon;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor
 public class AdminCouponCreateRequest {
 
-    // TODO: 필요한 필드 추가
-    // 예시) name, code, discountRate, minOrderAmount,
-    //       maxDiscountAmount, maxIssueCount, expiredAt
+    private String name;
+    private String code;
+    private int discountRate;
+    private int minOrderAmount;
+    private Integer maxDiscountAmount;
+    private Integer maxIssueCount;
+    private LocalDateTime expiredAt;
 
     public Coupon toEntity() {
-        // TODO
-        return null;
+        return Coupon.builder()
+                .name(name)
+                .code(code)
+                .discountRate(discountRate)
+                .minOrderAmount(minOrderAmount)
+                .maxDiscountAmount(maxDiscountAmount)
+                .maxIssueCount(maxIssueCount)
+                .expiredAt(expiredAt)
+                .build();
     }
 }

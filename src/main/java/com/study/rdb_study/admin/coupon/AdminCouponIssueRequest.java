@@ -1,5 +1,6 @@
 package com.study.rdb_study.admin.coupon;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -7,6 +8,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AdminCouponIssueRequest {
 
-    // TODO: 필요한 필드 추가
-    // 예시) memberId
+    private Long memberId;
 }

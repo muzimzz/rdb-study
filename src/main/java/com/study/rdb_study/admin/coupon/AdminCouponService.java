@@ -18,8 +18,7 @@ public class AdminCouponService {
 
     // 쿠폰 생성
     public AdminCouponResponse createCoupon(AdminCouponCreateRequest request) {
-        // TODO
-        return null;
+        return AdminCouponResponse.toDto(couponRepository.save(request.toEntity()));
     }
 
     // 전체 쿠폰 목록 조회
