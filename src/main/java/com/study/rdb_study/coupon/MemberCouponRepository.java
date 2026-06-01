@@ -1,5 +1,6 @@
 package com.study.rdb_study.coupon;
 
+import com.study.rdb_study.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -9,8 +10,6 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.sql.Timestamp;
-import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -48,25 +47,23 @@ public class MemberCouponRepository {
 
     // 쿠폰 발급 (member_coupons INSERT)
     public MemberCoupon save(Long memberId, Long couponId) {
-        String sql = """
-                insert into member_coupons (member_id, coupon_id)
-                values (?, ?)
-                """;
+        String sql = "insert into member_coupons (member_id, coupon_id) values (?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(conn -> {   // issuedAt default 설정 되어있는가?
+        jdbcTemplate.update(conn -> {
             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             pstmt.setLong(1, memberId);
             pstmt.setLong(2, couponId);
             return pstmt;
         }, keyHolder);
-
         return findById(keyHolder.getKey().longValue())
-                .orElseThrow(() -> new IllegalArgumentException("쿠폰 없음"));
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 쿠폰"));
+
     }
 
     public Optional<MemberCoupon> findById(Long memberCouponId) {
         String sql = "select * from member_coupons where member_coupon_id = ?";
-        return jdbcTemplate.query(sql, memberCouponRowMapper)
+
+        return jdbcTemplate.query(sql, memberCouponRowMapper, memberCouponId)
                 .stream().findFirst();
     }
 

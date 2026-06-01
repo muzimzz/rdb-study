@@ -19,6 +19,8 @@ public class OrderResponse {
     private OrderStatus status;
     private String representativeProductName;
     private int totalPrice;
+    private int discountAmount;   // 쿠폰 할인 금액
+    private int finalPrice;       // 실제 결제 금액 (totalPrice - discountAmount)
 
     public static OrderResponse toDto(Order order, List<OrderItemResponse> orderItems) {
         String firstName = orderItems.get(0).getProductName();
@@ -26,13 +28,16 @@ public class OrderResponse {
         String repName = remainProduct > 0 ?
                 firstName + " 외 " + remainProduct + "건" : firstName;
 
+        int totalPrice = orderItems.stream().mapToInt(OrderItemResponse::getTotalPrice).sum();
+
         return OrderResponse.builder()
                 .orderId(order.getOrderId())
                 .orderDate(order.getOrderDate())
                 .status(order.getStatus())
                 .representativeProductName(repName)
-                .totalPrice(orderItems.stream()
-                        .mapToInt(OrderItemResponse::getTotalPrice).sum())
+                .totalPrice(totalPrice)
+                .discountAmount(order.getDiscountAmount())
+                .finalPrice(totalPrice - order.getDiscountAmount())
                 .build();
     }
 }
