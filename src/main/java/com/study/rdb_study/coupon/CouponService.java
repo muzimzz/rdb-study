@@ -35,7 +35,8 @@ public class CouponService {
             throw new BadRequestException("기한이 만료된 쿠폰");
 
         //  3. 수량 체크 (issued_count >= max_issue_count)  ← 여기서 race condition
-        if (coupon.getIssuedCount() >= coupon.getMaxIssueCount())
+        if (coupon.getMaxIssueCount() != null &&
+                coupon.getIssuedCount() >= coupon.getMaxIssueCount())
             throw new BadRequestException("수량이 소진된 쿠폰");
 
         //  4. 중복 발급 확인
