@@ -50,7 +50,7 @@ public class AdminCouponService {
             throw new BadRequestException("발급 수량 초과");
 
         //  4. 중복 발급 여부 확인
-        if (memberCouponRepository.existsByMemberIdAndCouponId(couponId, memberId))
+        if (memberCouponRepository.existsByMemberIdAndCouponId(memberId, couponId))
             throw new BadRequestException("같은 회원에게 이미 발급된 쿠폰");
 
         //  5. member_coupons INSERT + issued_count +1
