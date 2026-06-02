@@ -20,6 +20,10 @@ public class CartItemService {
 
     // 장바구니에 상품 추가
     public void addItem(Long memberId, CartItemRequest request) {
+        if (request.getQuantity() <= 0) {
+            throw new BadRequestException("수량은 1 이상이어야 합니다.");
+        }
+
         Cart cart = cartRepository.findByMemberId(memberId)
                         .orElseThrow(() -> new NotFoundException("존재하지 않는 장바구니"));
 
