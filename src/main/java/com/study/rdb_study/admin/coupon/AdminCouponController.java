@@ -37,6 +37,8 @@ public class AdminCouponController {
             @PathVariable Long couponId,
             @RequestBody AdminCouponIssueRequest request) {
         adminCouponService.issueToMember(couponId, request.getMemberId());
-        return null;
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
     }
 }
