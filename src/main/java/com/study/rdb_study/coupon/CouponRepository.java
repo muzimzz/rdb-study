@@ -92,7 +92,8 @@ public class CouponRepository {
 
     // [문제 버전] 수량 체크 없이 그냥 +1 (race condition 발생)
     public void increaseIssuedCount(Long couponId) {
-        // TODO
+        String sql = "update coupons set issued_count = issued_count + 1 where coupon_id = ?";
+        jdbcTemplate.update(sql, couponId);
     }
 
     // [해결 버전 A] DB Atomic UPDATE - issued_count < max_issue_count 조건부로 +1
