@@ -71,6 +71,12 @@ public class OrderService {
             }
         }
 
+        int totalPrice = 0;
+        for (CartItem cartItem : cartItems) {
+            Product product = productMap.get(cartItem.getProductId());
+            totalPrice += product.getPrice() * cartItem.getQuantity();
+        }
+
         int totalDiscountAmount = 0;
         if (orderCreateRequest.getMemberCouponId() != null) {
             MemberCoupon memberCoupon = memberCouponRepository.findById(orderCreateRequest.getMemberCouponId())
@@ -85,11 +91,7 @@ public class OrderService {
             if (coupon.getExpiredAt().isBefore(LocalDateTime.now()))
                 throw new BadRequestException("만료된 쿠폰");
 
-            int totalPrice = 0;
-            for (CartItem cartItem : cartItems) {
-                Product product = productMap.get(cartItem.getProductId());
-                totalPrice += product.getPrice() * cartItem.getQuantity();
-            }
+
 
             if (totalPrice < coupon.getMinOrderAmount())
                 throw new BadRequestException("최소 주문 금액 미달");

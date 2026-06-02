@@ -24,11 +24,12 @@ public class OrderRepository {
             .memberCouponId(rs.getObject("member_coupon_id") != null
                     ? rs.getLong("member_coupon_id") : null)
             .discountAmount(rs.getInt("discount_amount"))
+            .totalAmount(rs.getInt("total_amount"))
             .build();
 
     // 주문 생성
     public Order save(Order order) {
-        String sql = "insert into orders (member_id, status, member_coupon_id, discount_amount) values (?, ?, ?, ?)";
+        String sql = "insert into orders (member_id, status, member_coupon_id, discount_amount, total_amount) values (?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(conn -> {
@@ -37,6 +38,7 @@ public class OrderRepository {
             pstmt.setString(2, order.getStatus().name());
             pstmt.setObject(3, order.getMemberCouponId()); // null 가능
             pstmt.setInt(4, order.getDiscountAmount());
+            pstmt.setInt(5, order.getTotalAmount());
             return pstmt;
         }, keyHolder);
 
@@ -46,7 +48,7 @@ public class OrderRepository {
 
     // 주문 단건 조회, 주문 취소 시 검증
     public Optional<Order> findById(Long id) {
-        String sql = "select order_id, member_id, order_date, status, member_coupon_id, discount_amount from orders where order_id=?";
+        String sql = "select order_id, member_id, order_date, status, member_coupon_id, discount_amount, total_amount from orders where order_id=?";
 
         return jdbcTemplate.query(sql, orderRowMapper, id)
                 .stream()
@@ -55,14 +57,14 @@ public class OrderRepository {
 
     // 내 주문 목록
     public List<Order> findByMemberId(Long id) {
-        String sql = "select order_id, member_id, order_date, status, member_coupon_id, discount_amount from orders where member_id=?";
+        String sql = "select order_id, member_id, order_date, status, member_coupon_id, discount_amount, total_amount from orders where member_id=?";
 
         return jdbcTemplate.query(sql, orderRowMapper, id);
     }
 
     // 관리자용
     public List<Order> findAll() {
-        String sql = "select order_id, member_id, order_date, status, member_coupon_id, discount_amount from orders";
+        String sql = "select order_id, member_id, order_date, status, member_coupon_id, discount_amount, total_amount from orders";
 
         return jdbcTemplate.query(sql, orderRowMapper);
     }

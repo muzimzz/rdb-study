@@ -16,6 +16,7 @@
     <div class="card">
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('info', this)">기본 정보</button>
+            <button class="tab-btn" onclick="switchTab('wish', this)">찜 목록</button>
             <button class="tab-btn" onclick="switchTab('reviews', this)">내 리뷰</button>
             <button class="tab-btn" onclick="switchTab('password', this)">비밀번호 변경</button>
             <button class="tab-btn" onclick="switchTab('withdraw', this)">회원 탈퇴</button>
@@ -24,6 +25,11 @@
         <!-- 기본 정보 탭 -->
         <div class="tab-panel active" id="tab-info">
             <div id="infoContent"><div class="loading">불러오는 중...</div></div>
+        </div>
+
+        <!-- 찜 목록 탭 -->
+        <div class="tab-panel" id="tab-wish">
+            <div id="wishContent"><div class="loading">불러오는 중...</div></div>
         </div>
 
         <!-- 내 리뷰 탭 -->
@@ -96,7 +102,7 @@
         btn.classList.add('active');
         document.getElementById(`tab-${name}`).classList.add('active');
 
-        // 리뷰 탭 클릭 시 로드
+        if (name === 'wish') loadWishList();
         if (name === 'reviews') loadMyReviews();
     }
 
@@ -150,6 +156,78 @@
                 showAlert(data?.message || '수정에 실패했습니다.', 'danger');
             }
         });
+    }
+
+    // ── 찜 목록 ──────────────────────────────────────────────────
+    async function loadWishList() {
+        document.getElementById('wishContent').innerHTML = '<div class="loading">불러오는 중...</div>';
+
+        const res = await api('/wish-items/me');
+        if (!res || !res.ok) return;
+
+        const items = await res.json();
+
+        if (items.length === 0) {
+            document.getElementById('wishContent').innerHTML = '<div class="empty" style="padding:2rem 0; color:#94a3b8;">찜한 상품이 없습니다.</div>';
+            return;
+        }
+
+        document.getElementById('wishContent').innerHTML = `
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>상품명</th>
+                            <th>가격</th>
+                            <th>찜한 날짜</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map(w => `
+                            <tr>
+                                <td>${w.productName}</td>
+                                <td>${formatPrice(w.price)}</td>
+                                <td>${formatDate(w.createdAt)}</td>
+                                <td>
+                                    <div style="display:flex; gap:0.5rem;">
+                                        <button class="btn btn-primary btn-sm" onclick="addToCartFromWish(${w.productId})">장바구니 담기</button>
+                                        <button class="btn btn-danger btn-sm" onclick="removeWish(${w.productId})">찜 취소</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    async function addToCartFromWish(productId) {
+        const res = await api('/cart-items', {
+            method: 'POST',
+            json: { productId, quantity: 1 },
+        });
+
+        if (res && res.status === 201) {
+            showAlert('장바구니에 담겼습니다.', 'success');
+        } else {
+            const data = await res?.json().catch(() => ({}));
+            showAlert(data?.message || '담기에 실패했습니다.', 'danger');
+        }
+    }
+
+    async function removeWish(productId) {
+        if (!confirm('찜을 취소하시겠습니까?')) return;
+
+        const res = await api(`/wish-items/${productId}`, { method: 'DELETE' });
+        if (res && res.ok) {
+            showAlert('찜이 취소됐습니다.', 'success');
+            loadWishList();
+        } else {
+            const data = await res?.json().catch(() => ({}));
+            showAlert(data?.message || '취소에 실패했습니다.', 'danger');
+        }
     }
 
     // ── 내 리뷰 목록 ─────────────────────────────────────────────

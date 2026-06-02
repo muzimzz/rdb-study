@@ -14,12 +14,13 @@ public class OrderCreateRequest {
 
     private Long memberCouponId;  // 사용할 쿠폰 발급 ID, 없으면 null
 
-    public Order toEntity(Long memberId, int disCountAmount) {
+    public Order toEntity(Long memberId, int disCountAmount, int totalAmount) {
         return Order.builder()
                 .memberId(memberId)
                 .status(OrderStatus.PENDING) // 주문 생성 시 무조건 PENDING으로 고정
                 .memberCouponId(memberCouponId)
                 .discountAmount(disCountAmount)
+                .totalAmount(totalAmount)
                 .build();
     }
 
