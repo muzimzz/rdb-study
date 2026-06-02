@@ -1,7 +1,9 @@
 package com.study.rdb_study.member;
 
+import com.study.rdb_study.member.userDetails.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -31,32 +33,32 @@ public class MemberController {
 
     # 관리자용
     GET    /members              - 전체 조회
-    GET    /members/{id}         - 특정 회원 조회
-    DELETE /members/{id}         - 물리 삭제 (극히 예외적)
+    GET    /members/{id}        - 특정 회원 조회
+    DELETE /members/{id}       - 물리 삭제 (극히 예외적)
 */
 
-    @GetMapping("/{id}")
-    public ResponseEntity<MemberResponse> findById(@PathVariable Long id) {
-        MemberResponse response = memberService.findById(id);
+    @GetMapping("/me")
+    public ResponseEntity<MemberResponse> findById(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        MemberResponse response = memberService.findById(userDetails.getMemberId());
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> update(@PathVariable Long id,
+    @PutMapping("/me")
+    public ResponseEntity<Void> update(@AuthenticationPrincipal CustomUserDetails userDetails,
                        @RequestBody MemberRequest request) {
-        memberService.update(id, request);
+        memberService.update(userDetails.getMemberId(), request);
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}/password")
-    public ResponseEntity<Void> updatePassword(@PathVariable Long id, @RequestBody PasswordChangeRequest request) {
-        memberService.updatePassword(id, request.getInputPassword(), request.getNewPassword());
+    @PatchMapping("/me/password")
+    public ResponseEntity<Void> updatePassword(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody PasswordChangeRequest request) {
+        memberService.updatePassword(userDetails.getMemberId(), request.getInputPassword(), request.getNewPassword());
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}/withdraw")
-    public ResponseEntity<Void> withdraw(@PathVariable Long id) {
-        memberService.withdraw(id);
+    @PatchMapping("/me/withdraw")
+    public ResponseEntity<Void> withdraw(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        memberService.withdraw(userDetails.getMemberId());
         return ResponseEntity.noContent().build();
     }
 }
