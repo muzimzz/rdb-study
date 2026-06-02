@@ -82,6 +82,9 @@ public class OrderService {
             MemberCoupon memberCoupon = memberCouponRepository.findById(orderCreateRequest.getMemberCouponId())
                     .orElseThrow(() -> new NotFoundException("존재하지 않는 쿠폰"));
 
+            if (!memberCoupon.getMemberId().equals(memberId))
+                throw new BadRequestException("본인의 쿠폰만 사용 가능");
+
             if (memberCoupon.isUsed())
                 throw new BadRequestException("이미 사용한 쿠폰");
 
@@ -90,8 +93,6 @@ public class OrderService {
 
             if (coupon.getExpiredAt().isBefore(LocalDateTime.now()))
                 throw new BadRequestException("만료된 쿠폰");
-
-
 
             if (totalPrice < coupon.getMinOrderAmount())
                 throw new BadRequestException("최소 주문 금액 미달");
