@@ -22,6 +22,9 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
 
     public MemberResponse join(MemberRequest memberRequest) {
+        if (memberRepository.existByEmail(memberRequest.getEmail()))
+            throw new BadRequestException("이미 존재하는 이메일");
+
         String encodedPassword = passwordEncoder.encode(memberRequest.getPassword());
         Member member = memberRepository.save(memberRequest.toEntity(encodedPassword));
         cartRepository.save(Cart.builder()

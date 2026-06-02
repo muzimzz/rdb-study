@@ -120,4 +120,11 @@ public class MemberRepository {
 
         return count != null && count > 0;
     }
+
+    // 회원가입 시 중복 이메일 검증
+    public boolean existByEmail(String email) {
+        String sql = "select count(*) from members where email = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, email);
+        return count != null && count > 0;
+    }
 }
