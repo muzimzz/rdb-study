@@ -1,5 +1,6 @@
 package com.study.rdb_study.coupon;
 
+import com.study.rdb_study.admin.coupon.AdminCouponResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -11,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -81,6 +83,11 @@ public class CouponRepository {
                 .stream().findFirst();
     }
 
+    public List<Coupon> findAll() {
+        String sql = "select * from coupons";
+        return jdbcTemplate.query(sql, couponRowMapper);
+    }
+
     // ── 트랜잭션 실습용 ──────────────────────────────────────────
 
     // [문제 버전] 수량 체크 없이 그냥 +1 (race condition 발생)
@@ -101,4 +108,6 @@ public class CouponRepository {
         // TODO
         return Optional.empty();
     }
+
+
 }

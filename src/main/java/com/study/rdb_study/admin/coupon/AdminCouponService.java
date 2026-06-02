@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,8 +25,10 @@ public class AdminCouponService {
     // 전체 쿠폰 목록 조회
     @Transactional(readOnly = true)
     public List<AdminCouponResponse> findAll() {
-        // TODO
-        return List.of();
+        return couponRepository.findAll()
+                .stream()
+                .map(AdminCouponResponse::toDto)
+                .collect(Collectors.toList());
     }
 
     // 특정 회원에게 쿠폰 직접 발급

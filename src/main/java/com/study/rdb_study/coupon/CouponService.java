@@ -1,5 +1,6 @@
 package com.study.rdb_study.coupon;
 
+import com.study.rdb_study.global.exception.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
