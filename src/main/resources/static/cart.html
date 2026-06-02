@@ -17,12 +17,45 @@
     </div>
 </div>
 
+<!-- 주문하기 모달 (쿠폰 선택) -->
+<div class="modal-overlay" id="orderModal">
+    <div class="modal" style="max-width:500px; width:90%;">
+        <div class="modal-title">주문하기</div>
+        <div style="margin-bottom:1rem;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.9rem;">
+                <span style="color:#64748b;">상품 합계</span>
+                <span id="modalTotalPrice" style="font-weight:600;"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.9rem;" id="discountRow" style="display:none;">
+                <span style="color:#64748b;">쿠폰 할인</span>
+                <span id="modalDiscountPrice" style="font-weight:600; color:#ef4444;"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding-top:0.75rem; border-top:1px solid #e2e8f0; font-size:1rem;">
+                <span style="font-weight:700;">최종 결제금액</span>
+                <span id="modalFinalPrice" style="font-weight:700; color:#3b82f6; font-size:1.1rem;"></span>
+            </div>
+        </div>
+        <div>
+            <h3 style="font-size:0.875rem; font-weight:600; margin-bottom:0.75rem; color:#374151;">쿠폰 선택 (선택사항)</h3>
+            <div id="couponSelectArea">
+                <div class="loading" style="padding:0.5rem 0; font-size:0.85rem;">쿠폰 목록 불러오는 중...</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" onclick="closeOrderModal()">취소</button>
+            <button class="btn btn-primary" type="button" onclick="confirmOrder()" id="confirmOrderBtn">결제하기</button>
+        </div>
+    </div>
+</div>
+
 <script src="/js/api.js"></script>
 <script>
     const member = requireAuth();
     renderNavbar('cart');
 
     let cartId = null;
+    let cartTotal = 0;         // 장바구니 합계
+    let selectedCouponId = null;  // 선택된 memberCouponId
 
     async function loadCart() {
         const res = await api(`/carts`);
@@ -41,6 +74,7 @@
         }
 
         const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+        cartTotal = total;
 
         el.innerHTML = `
             <div class="table-wrap">
@@ -119,21 +153,109 @@
         if (res && res.ok) loadCart();
     }
 
+    // 주문하기 버튼 클릭 → 쿠폰 선택 모달 오픈
     async function placeOrder() {
-        if (!confirm('주문하시겠습니까?')) return;
+        selectedCouponId = null;
+        document.getElementById('modalTotalPrice').textContent = formatPrice(cartTotal);
+        document.getElementById('modalDiscountPrice').textContent = '';
+        document.getElementById('modalFinalPrice').textContent = formatPrice(cartTotal);
+        document.getElementById('discountRow').style.display = 'none';
+        document.getElementById('orderModal').classList.add('open');
+
+        // 사용 가능한 쿠폰 목록 로드
+        const res = await api('/coupons/me');
+        const area = document.getElementById('couponSelectArea');
+
+        if (!res || !res.ok) {
+            area.innerHTML = '<div style="font-size:0.85rem; color:#94a3b8;">쿠폰을 불러올 수 없습니다.</div>';
+            return;
+        }
+
+        const coupons = await res.json();
+        // 사용 가능한 쿠폰만 필터 (미사용 + 미만료 + 최소 주문 금액 충족)
+        const available = coupons.filter(c => !c.used && !c.expired && cartTotal >= c.minOrderAmount);
+
+        if (available.length === 0) {
+            area.innerHTML = '<div style="font-size:0.85rem; color:#94a3b8; padding:0.5rem 0;">사용 가능한 쿠폰이 없습니다.</div>';
+            return;
+        }
+
+        area.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:0.5rem; max-height:200px; overflow-y:auto;">
+                <label style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem; border:2px solid #e2e8f0; border-radius:8px; cursor:pointer;" id="coupon-none">
+                    <input type="radio" name="coupon" value="" checked onchange="onCouponSelect(null, 0)">
+                    <span style="font-size:0.875rem; color:#64748b;">쿠폰 사용 안 함</span>
+                </label>
+                ${available.map(c => {
+                    // 할인 금액 미리 계산
+                    let discount = Math.floor(cartTotal * c.discountRate / 100);
+                    if (c.maxDiscountAmount != null) discount = Math.min(discount, c.maxDiscountAmount);
+                    return `
+                        <label style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem; border:2px solid #e2e8f0; border-radius:8px; cursor:pointer;" id="coupon-${c.memberCouponId}">
+                            <input type="radio" name="coupon" value="${c.memberCouponId}" onchange="onCouponSelect(${c.memberCouponId}, ${discount})">
+                            <div>
+                                <div style="font-weight:600; font-size:0.875rem;">${c.couponName}</div>
+                                <div style="font-size:0.8rem; color:#3b82f6;">${c.discountRate}% 할인 → <strong>-${discount.toLocaleString()}원</strong></div>
+                                ${c.maxDiscountAmount != null ? `<div style="font-size:0.75rem; color:#94a3b8;">최대 ${c.maxDiscountAmount.toLocaleString()}원 할인</div>` : ''}
+                            </div>
+                        </label>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    function onCouponSelect(memberCouponId, discountAmount) {
+        selectedCouponId = memberCouponId;
+        const finalPrice = cartTotal - discountAmount;
+
+        document.getElementById('modalFinalPrice').textContent = formatPrice(finalPrice);
+
+        if (discountAmount > 0) {
+            document.getElementById('discountRow').style.display = 'flex';
+            document.getElementById('modalDiscountPrice').textContent = `-${formatPrice(discountAmount)}`;
+        } else {
+            document.getElementById('discountRow').style.display = 'none';
+        }
+
+        // 선택된 라디오 라벨 하이라이트
+        document.querySelectorAll('[id^="coupon-"]').forEach(el => {
+            el.style.borderColor = '#e2e8f0';
+        });
+        const targetId = memberCouponId ? `coupon-${memberCouponId}` : 'coupon-none';
+        const target = document.getElementById(targetId);
+        if (target) target.style.borderColor = '#3b82f6';
+    }
+
+    function closeOrderModal() {
+        document.getElementById('orderModal').classList.remove('open');
+    }
+
+    document.getElementById('orderModal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeOrderModal();
+    });
+
+    async function confirmOrder() {
+        const btn = document.getElementById('confirmOrderBtn');
+        btn.disabled = true;
+        btn.textContent = '처리 중...';
 
         const res = await api('/orders', {
             method: 'POST',
-            json: { },
+            json: { memberCouponId: selectedCouponId || null },
         });
 
+        btn.disabled = false;
+        btn.textContent = '결제하기';
+
         if (res && res.status === 201) {
-            const order = await res.json();
+            closeOrderModal();
             showAlert('주문이 완료됐습니다!', 'success');
             setTimeout(() => location.href = '/orders.html', 1500);
         } else {
             const data = await res?.json().catch(() => ({}));
             showAlert(data?.message || '주문에 실패했습니다.', 'danger');
+            closeOrderModal();
         }
     }
 

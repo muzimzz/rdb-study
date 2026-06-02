@@ -18,6 +18,7 @@
             <button class="tab-btn active" onclick="switchTab('info', this)">기본 정보</button>
             <button class="tab-btn" onclick="switchTab('wish', this)">찜 목록</button>
             <button class="tab-btn" onclick="switchTab('reviews', this)">내 리뷰</button>
+            <button class="tab-btn" onclick="switchTab('coupons', this)">내 쿠폰</button>
             <button class="tab-btn" onclick="switchTab('password', this)">비밀번호 변경</button>
             <button class="tab-btn" onclick="switchTab('withdraw', this)">회원 탈퇴</button>
         </div>
@@ -35,6 +36,21 @@
         <!-- 내 리뷰 탭 -->
         <div class="tab-panel" id="tab-reviews">
             <div id="reviewContent"><div class="loading">불러오는 중...</div></div>
+        </div>
+
+        <!-- 내 쿠폰 탭 -->
+        <div class="tab-panel" id="tab-coupons">
+            <!-- 쿠폰 코드 등록 -->
+            <div style="margin-bottom:1.5rem; max-width:420px;">
+                <h3 style="font-size:0.95rem; font-weight:600; margin-bottom:0.75rem;">쿠폰 코드 등록</h3>
+                <form id="couponRegisterForm" style="display:flex; gap:0.5rem;">
+                    <input class="form-control" type="text" id="couponCode" placeholder="쿠폰 코드를 입력하세요" required>
+                    <button class="btn btn-primary" type="submit" style="white-space:nowrap;">등록</button>
+                </form>
+            </div>
+            <hr style="border-color:#e2e8f0; margin-bottom:1.5rem;">
+            <h3 style="font-size:0.95rem; font-weight:600; margin-bottom:0.75rem;">보유 쿠폰</h3>
+            <div id="couponContent"><div class="loading">불러오는 중...</div></div>
         </div>
 
         <!-- 비밀번호 변경 탭 -->
@@ -104,6 +120,7 @@
 
         if (name === 'wish') loadWishList();
         if (name === 'reviews') loadMyReviews();
+        if (name === 'coupons') loadMyCoupons();
     }
 
     // ── 기본 정보 ────────────────────────────────────────────────
@@ -367,6 +384,71 @@
         } else {
             const data = await res?.json().catch(() => ({}));
             showAlert(data?.message || '수정에 실패했습니다.', 'danger');
+        }
+    });
+
+    // ── 내 쿠폰 ─────────────────────────────────────────────────
+    async function loadMyCoupons() {
+        document.getElementById('couponContent').innerHTML = '<div class="loading">불러오는 중...</div>';
+
+        const res = await api('/coupons/me');
+        if (!res || !res.ok) return;
+
+        const coupons = await res.json();
+
+        if (coupons.length === 0) {
+            document.getElementById('couponContent').innerHTML = '<div class="empty" style="padding:2rem 0; color:#94a3b8;">보유한 쿠폰이 없습니다.</div>';
+            return;
+        }
+
+        document.getElementById('couponContent').innerHTML = `
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem;">
+                ${coupons.map(c => {
+                    const expired = c.expired;
+                    const used = c.used;
+                    const statusBadge = used
+                        ? '<span class="badge badge-secondary">사용완료</span>'
+                        : expired
+                            ? '<span class="badge badge-danger">만료됨</span>'
+                            : '<span class="badge badge-success">사용가능</span>';
+                    const dimStyle = (used || expired) ? 'opacity:0.5;' : '';
+                    return `
+                        <div style="border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem; background:#fff; ${dimStyle}">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem;">
+                                <span style="font-weight:600; font-size:0.95rem;">${c.couponName}</span>
+                                ${statusBadge}
+                            </div>
+                            <div style="font-size:1.4rem; font-weight:700; color:#3b82f6; margin-bottom:0.5rem;">${c.discountRate}% 할인</div>
+                            <div style="font-size:0.8rem; color:#64748b; line-height:1.7;">
+                                ${c.minOrderAmount > 0 ? `<div>최소 주문: ${c.minOrderAmount.toLocaleString()}원 이상</div>` : '<div>최소 주문 제한 없음</div>'}
+                                ${c.maxDiscountAmount != null ? `<div>최대 할인: ${c.maxDiscountAmount.toLocaleString()}원</div>` : ''}
+                                <div>만료일: ${formatDate(c.expiredAt)}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    // 쿠폰 코드 등록 폼
+    document.getElementById('couponRegisterForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const code = document.getElementById('couponCode').value.trim();
+        if (!code) return;
+
+        const res = await api('/coupons/register', {
+            method: 'POST',
+            json: { code },
+        });
+
+        if (res && res.ok) {
+            showAlert('쿠폰이 등록됐습니다.', 'success');
+            document.getElementById('couponCode').value = '';
+            loadMyCoupons();
+        } else {
+            const data = await res?.json().catch(() => ({}));
+            showAlert(data?.message || '쿠폰 등록에 실패했습니다.', 'danger');
         }
     });
 
