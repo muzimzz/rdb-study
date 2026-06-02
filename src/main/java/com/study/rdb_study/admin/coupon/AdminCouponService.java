@@ -46,7 +46,7 @@ public class AdminCouponService {
 
         //  3. 수량 한도 초과 여부 확인
         if (coupon.getMaxIssueCount() != null &&
-                coupon.getIssuedCount() < coupon.getMaxIssueCount())
+                coupon.getIssuedCount() >= coupon.getMaxIssueCount())
             throw new BadRequestException("발급 수량 초과");
 
         //  4. 중복 발급 여부 확인
