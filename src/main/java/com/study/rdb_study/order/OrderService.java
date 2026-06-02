@@ -101,7 +101,7 @@ public class OrderService {
         }
 
         // 주문 저장
-        Order order = orderRepository.save(orderCreateRequest.toEntity(memberId, totalDiscountAmount));
+        Order order = orderRepository.save(orderCreateRequest.toEntity(memberId, totalDiscountAmount, totalPrice - totalDiscountAmount));
 
         // 주문 아이템 저장 + 응답(반환)용 dto 생성 + 재고 차감
         for (CartItem cartItem : cartItems) {
