@@ -3,9 +3,11 @@ package com.study.rdb_study;
 import com.study.rdb_study.coupon.Coupon;
 import com.study.rdb_study.coupon.CouponRepository;
 import com.study.rdb_study.coupon.CouponService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -21,16 +23,49 @@ class CouponConcurrencyTest {
     @Autowired
     private CouponRepository couponRepository;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    // 각 테스트 끝난 후 자동으로 DB 초기화
+    @AfterEach
+    void resetDb() {
+        jdbcTemplate.update("DELETE FROM member_coupons WHERE member_id >= 4");
+        jdbcTemplate.update("UPDATE coupons SET issued_count = 0 WHERE code = 'RACE_TEST'");
+    }
+
     @Test
-    void 동시에_100명이_선착순30개_쿠폰_요청시_초과발급_발생() throws InterruptedException {
+    void 테스트1_락없음_race_condition_발생() throws InterruptedException {
+        long duration = runTest("RACE_TEST", (memberId, code) ->
+                couponService.registerByCode(memberId, code));
+
+        printResult("락 없음 (race condition)", duration, "RACE_TEST");
+    }
+
+    @Test
+    void 테스트2_Atomic_UPDATE_정상처리() throws InterruptedException {
+        long duration = runTest("RACE_TEST", (memberId, code) ->
+                couponService.registerByCodeAtomic(memberId, code));
+
+        printResult("Atomic UPDATE", duration, "RACE_TEST");
+    }
+
+    @Test
+    void 테스트3_FOR_UPDATE_정상처리() throws InterruptedException {
+        long duration = runTest("RACE_TEST", (memberId, code) ->
+                couponService.registerByCodeWithLock(memberId, code));
+
+        printResult("FOR UPDATE (비관적 락)", duration, "RACE_TEST");
+    }
+
+    // 공통 테스트 로직
+    private long runTest(String couponCode, CouponRegisterFunction registerFn) throws InterruptedException {
         int threadCount = 100;
         long startMemberId = 4L;
-        String couponCode = "RACE_TEST";
 
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-        CountDownLatch readyLatch = new CountDownLatch(threadCount); // 스레드 준비 완료 신호
-        CountDownLatch startLatch = new CountDownLatch(1);           // 동시 출발 신호
-        CountDownLatch doneLatch = new CountDownLatch(threadCount);  // 전체 완료 대기
+        CountDownLatch readyLatch = new CountDownLatch(threadCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threadCount);
 
         AtomicInteger successCount = new AtomicInteger(0);
         AtomicInteger failCount = new AtomicInteger(0);
@@ -39,44 +74,45 @@ class CouponConcurrencyTest {
             long memberId = startMemberId + i; // 4 ~ 103
             executor.submit(() -> {
                 try {
-                    readyLatch.countDown(); // 준비 완료 알림
-                    startLatch.await();     // 모든 스레드 준비될 때까지 대기
-                    // couponService.registerByCode(memberId, couponCode);
-                    // couponService.registerByCodeAtomic(memberId, couponCode);
-                    couponService.registerByCodeWithLock(memberId, couponCode);
+                    readyLatch.countDown();
+                    startLatch.await();
+                    registerFn.apply(memberId, couponCode);
                     successCount.incrementAndGet();
                 } catch (Exception e) {
                     failCount.incrementAndGet();
-                    System.out.println("실패 원인: " + e.getMessage());
                 } finally {
                     doneLatch.countDown();
                 }
             });
         }
 
-        readyLatch.await();     // 100개 스레드 모두 준비될 때까지 대기
-
+        readyLatch.await();
         long startTime = System.currentTimeMillis();
-        startLatch.countDown(); // 동시 출발!
-        doneLatch.await();      // 모든 스레드 완료될 때까지 대기
+        startLatch.countDown();
+        doneLatch.await();
+        long duration = System.currentTimeMillis() - startTime;
 
-        long endTime = System.currentTimeMillis();
-        long duration = endTime - startTime;
         executor.shutdown();
+        return duration;
+    }
 
+    private void printResult(String label, long duration, String couponCode) {
         Coupon coupon = couponRepository.findByCode(couponCode).get();
-
-        System.out.println("========== 결과 ==========");
-        System.out.println("락 병목 수행 시간 : " + duration + " ms");
-        System.out.println("성공한 요청 수    : " + successCount.get());
-        System.out.println("실패한 요청 수    : " + failCount.get());
+        System.out.println("\n========== [" + label + "] ==========");
+        System.out.println("수행 시간       : " + duration + " ms");
         System.out.println("DB issued_count : " + coupon.getIssuedCount());
         System.out.println("maxIssueCount   : " + coupon.getMaxIssueCount());
-        System.out.println("==========================");
         if (coupon.getIssuedCount() > coupon.getMaxIssueCount()) {
-            System.out.println("race condition 발생! " + coupon.getIssuedCount() + "개 초과 발급됨");
+            System.out.println("결과: race condition 발생! " + coupon.getIssuedCount() + "개 초과 발급됨");
         } else {
-            System.out.println("정상 처리됨");
+            System.out.println("결과: 정상 처리됨");
         }
+        System.out.println("==========================================");
+    }
+
+    // 람다로 메서드 전달하기 위한 함수형 인터페이스
+    @FunctionalInterface
+    interface CouponRegisterFunction {
+        void apply(Long memberId, String code) throws Exception;
     }
 }
