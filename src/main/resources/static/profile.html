@@ -125,7 +125,7 @@
 
     // ── 기본 정보 ────────────────────────────────────────────────
     async function loadInfo() {
-        const res = await api(`/members/${member.memberId}`);
+        const res = await api(`/members/me`);
         if (!res || !res.ok) return;
 
         const m = await res.json();
@@ -153,7 +153,7 @@
 
         document.getElementById('infoForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const res = await api(`/members/${member.memberId}`, {
+            const res = await api(`/members/me`, {
                 method: 'PUT',
                 json: {
                     name: document.getElementById('name').value,
@@ -455,7 +455,7 @@
     // ── 비밀번호 변경 ────────────────────────────────────────────
     document.getElementById('passwordForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const res = await api(`/members/${member.memberId}/password`, {
+        const res = await api(`/members/me/password`, {
             method: 'PATCH',
             json: {
                 inputPassword: document.getElementById('inputPassword').value,
@@ -476,7 +476,7 @@
     async function withdraw() {
         if (!confirm('정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
 
-        const res = await api(`/members/${member.memberId}/withdraw`, { method: 'PATCH' });
+        const res = await api(`/members/me/withdraw`, { method: 'PATCH' });
         if (res && res.ok) {
             alert('탈퇴가 완료됐습니다.');
             Session.clear();
