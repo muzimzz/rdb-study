@@ -99,15 +99,22 @@ public class CouponRepository {
     // [해결 버전 A] DB Atomic UPDATE - issued_count < max_issue_count 조건부로 +1
     // 반환값: true = 성공, false = 선착순 마감
     public boolean increaseIssuedCountIfAvailable(Long couponId) {
-        // TODO
-        return false;
+        String sql = """
+            update coupons 
+            set issued_count = issued_count + 1
+            where coupon_id = ? 
+            and issued_count < max_issue_count
+            """;
+        int affectedRows = jdbcTemplate.update(sql, couponId);
+        return affectedRows > 0;
     }
 
     // [해결 버전 B] 비관적 락 - SELECT ... FOR UPDATE
     // 주의: 반드시 @Transactional 내에서 호출해야 락이 의미 있음
     public Optional<Coupon> findByCodeForUpdate(String code) {
-        // TODO
-        return Optional.empty();
+        String sql = "select * from coupons where code = ? FOR UPDATE";
+        return jdbcTemplate.query(sql, couponRowMapper, code)
+                .stream().findFirst();
     }
 
 

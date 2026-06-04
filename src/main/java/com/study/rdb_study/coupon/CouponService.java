@@ -3,6 +3,7 @@ package com.study.rdb_study.coupon;
 import com.study.rdb_study.global.exception.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -51,19 +52,45 @@ public class CouponService {
 
     // [해결 버전 A] DB Atomic UPDATE 방식
     public void registerByCodeAtomic(Long memberId, String code) {
-        // TODO: 1. 코드로 쿠폰 조회
-        //       2. 만료 여부 확인
-        //       3. 중복 발급 확인
-        //       4. increaseIssuedCountIfAvailable() → false면 선착순 마감 예외
-        //       5. member_coupons INSERT
+        Coupon coupon = couponRepository.findByCode(code)
+                .orElseThrow(() -> new BadRequestException("잘못된 쿠폰 코드"));
+
+        if (coupon.getExpiredAt().isBefore(LocalDateTime.now()))
+            throw new BadRequestException("기한이 만료된 쿠폰");
+
+//        if (coupon.getMaxIssueCount() != null &&
+//                coupon.getIssuedCount() >= coupon.getMaxIssueCount())
+//            throw new BadRequestException("수량이 소진된 쿠폰");
+
+        if (memberCouponRepository.existsByMemberIdAndCouponId(memberId, coupon.getCouponId()))
+            throw new BadRequestException("이미 발급한 쿠폰");
+
+        // increaseIssuedCount와 수량 검증을 한번에
+        if (!couponRepository.increaseIssuedCountIfAvailable(coupon.getCouponId()))
+            throw new BadRequestException("선착순 마감된 쿠폰");
+
+        memberCouponRepository.save(memberId, coupon.getCouponId());
+        // couponRepository.increaseIssuedCount(coupon.getCouponId());
     }
 
     // [해결 버전 B] 비관적 락(FOR UPDATE) 방식
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void registerByCodeWithLock(Long memberId, String code) {
-        // TODO: 1. findByCodeForUpdate() → row 잠금
-        //       2. 만료 여부 확인
-        //       3. 수량 체크 (이제 최신값 보장됨)
-        //       4. 중복 발급 확인
-        //       5. member_coupons INSERT + issued_count +1
+        Coupon coupon = couponRepository.findByCodeForUpdate(code)
+                .orElseThrow(() -> new BadRequestException("잘못된 쿠폰 코드"));
+
+        if (coupon.getExpiredAt().isBefore(LocalDateTime.now()))
+            throw new BadRequestException("기한이 만료된 쿠폰");
+
+        // FOR UPDATE 덕분에 최신값이 보장됨
+        if (coupon.getMaxIssueCount() != null &&
+                coupon.getIssuedCount() >= coupon.getMaxIssueCount())
+            throw new BadRequestException("수량이 소진된 쿠폰");
+
+        if (memberCouponRepository.existsByMemberIdAndCouponId(memberId, coupon.getCouponId()))
+            throw new BadRequestException("이미 발급한 쿠폰");
+
+        memberCouponRepository.save(memberId, coupon.getCouponId());
+        couponRepository.increaseIssuedCount(coupon.getCouponId());
     }
 }
