@@ -23,7 +23,7 @@ class CouponConcurrencyTest {
 
     @Test
     void 동시에_100명이_선착순30개_쿠폰_요청시_초과발급_발생() throws InterruptedException {
-        int threadCount = 500;
+        int threadCount = 100;
         long startMemberId = 4L;
         String couponCode = "RACE_TEST";
 
