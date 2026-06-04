@@ -31,19 +31,22 @@
     const member = requireAuth();
     renderNavbar('orders');
 
+    // 목록 캐시: 상세 모달에서 discountAmount/finalPrice 참조용
+    let cachedOrders = [];
+
     async function loadOrders() {
         const res = await api(`/orders`);
         if (!res || !res.ok) return;
 
-        const orders = await res.json();
+        cachedOrders = await res.json();
         const el = document.getElementById('orderList');
 
-        if (orders.length === 0) {
+        if (cachedOrders.length === 0) {
             el.innerHTML = '<div class="empty"><p>주문 내역이 없습니다.</p></div>';
             return;
         }
 
-        el.innerHTML = orders.map(o => `
+        el.innerHTML = cachedOrders.map(o => `
             <div class="order-card">
                 <div class="order-info">
                     <div class="order-id">주문 #${o.orderId}</div>
@@ -51,7 +54,8 @@
                     <div class="order-product">${o.representativeProductName}</div>
                 </div>
                 <div class="order-actions">
-                    <div class="order-price">${formatPrice(o.totalPrice)}</div>
+                    <!-- finalPrice: 실제 결제 금액(쿠폰 할인 적용 후) -->
+                    <div class="order-price">${formatPrice(o.finalPrice)}</div>
                     ${statusBadge(o.status)}
                     <button class="btn btn-secondary btn-sm" onclick="showDetail(${o.orderId})">상세보기</button>
                     ${o.status === 'PENDING' ? `
@@ -67,6 +71,11 @@
         if (!res || !res.ok) return;
 
         const order = await res.json();
+        // 목록 캐시에서 할인 정보 참조 (OrderDetailResponse에는 discountAmount 없음)
+        const cached = cachedOrders.find(o => o.orderId === orderId);
+        const discountAmount = cached?.discountAmount ?? 0;
+        const finalPrice = cached?.finalPrice ?? order.totalPrice;
+
         document.getElementById('modalContent').innerHTML = `
             <div style="margin-bottom:1rem;">
                 <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
@@ -102,9 +111,21 @@
                     `).join('')}
                 </tbody>
             </table>
-            <div style="display:flex; justify-content:space-between; font-weight:700;">
-                <span>합계</span>
-                <span style="color:#3b82f6;">${formatPrice(order.totalPrice)}</span>
+            <div style="border-top:1px solid #e2e8f0; padding-top:0.75rem;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem; font-size:0.875rem;">
+                    <span style="color:#64748b;">상품 합계</span>
+                    <span>${formatPrice(order.totalPrice)}</span>
+                </div>
+                ${discountAmount > 0 ? `
+                <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem; font-size:0.875rem;">
+                    <span style="color:#64748b;">쿠폰 할인</span>
+                    <span style="color:#ef4444;">-${formatPrice(discountAmount)}</span>
+                </div>
+                ` : ''}
+                <div style="display:flex; justify-content:space-between; font-weight:700; font-size:1rem; margin-top:0.5rem; padding-top:0.5rem; border-top:1px solid #f1f5f9;">
+                    <span>최종 결제금액</span>
+                    <span style="color:#3b82f6;">${formatPrice(finalPrice)}</span>
+                </div>
             </div>
         `;
         document.getElementById('detailModal').classList.add('open');
